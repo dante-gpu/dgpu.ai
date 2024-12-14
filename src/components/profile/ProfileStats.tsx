@@ -20,49 +20,50 @@ interface ActivityData {
 
 export const ProfileStats: React.FC<ProfileStatsProps> = ({ profile }) => {
   const [activityData, setActivityData] = useState<ActivityData[]>([]);
-  const { rentals } = useRentals();
+  const { rentals } = useRentals(window.solana?.publicKey);
 
   useEffect(() => {
-    // Son 24 saatin verilerini oluştur
-    const generateActivityData = () => {
-      const data: ActivityData[] = [];
-      const now = new Date();
+    const updateActivityData = () => {
+      // Son 24 saatin verilerini oluştur
+      const data = Array.from({ length: 24 }, (_, i) => {
+        const time = new Date();
+        time.setHours(time.getHours() - (23 - i));
+        time.setMinutes(0, 0, 0);
 
-      for (let i = 23; i >= 0; i--) {
-        const time = new Date(now.getTime() - i * 60 * 60 * 1000);
-        const startTime = new Date(time);
-        startTime.setMinutes(0, 0, 0);
-        const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
-
-        // Bu saat dilimindeki rental'ları filtrele
+        // Bu saat için rental işlemlerini bul
         const hourRentals = rentals.filter(rental => {
           const rentalTime = new Date(rental.timestamp);
-          return rentalTime >= startTime && rentalTime < endTime;
+          const startHour = new Date(time);
+          const endHour = new Date(time.getTime() + 3600000); // 1 saat ekle
+          return rentalTime >= startHour && rentalTime < endHour;
         });
 
-        // İstatistikleri hesapla
-        const hourData: ActivityData = {
+        // Harcama ve kazanç hesapla
+        const spending = hourRentals
+          .filter(r => r.renterAddress === profile.address)
+          .reduce((sum, r) => sum + r.price, 0);
+
+        const earnings = hourRentals
+          .filter(r => r.gpu.creator?.address === profile.address)
+          .reduce((sum, r) => sum + r.price, 0);
+
+        return {
           time: time.toLocaleTimeString([], { hour: '2-digit' }),
-          earnings: calculateEarnings(hourRentals, profile.address),
-          spending: calculateSpending(hourRentals, profile.address),
+          spending,
+          earnings,
           activeRentals: hourRentals.filter(r => r.status === 'active').length,
           performance: calculatePerformance(hourRentals)
         };
+      });
 
-        data.push(hourData);
-      }
-
-      return data;
+      setActivityData(data);
     };
 
     // İlk veriyi oluştur
-    setActivityData(generateActivityData());
+    updateActivityData();
 
-    // Her 5 dakikada bir güncelle
-    const interval = setInterval(() => {
-      setActivityData(generateActivityData());
-    }, 5 * 60 * 1000);
-
+    // Her 3 saniyede bir güncelle
+    const interval = setInterval(updateActivityData, 3000);
     return () => clearInterval(interval);
   }, [rentals, profile.address]);
 
@@ -163,22 +164,32 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({ profile }) => {
   );
 };
 
-// Yardımcı fonksiyonlar
-const calculateEarnings = (rentals: RentalHistory[], address: string) => {
-  return rentals
-    .filter(r => r.gpu.creator?.address === address)
-    .reduce((sum, r) => sum + r.price, 0);
-};
-
+// Yardımcı fonksiyonları güncelle
 const calculateSpending = (rentals: RentalHistory[], address: string) => {
   return rentals
     .filter(r => r.renterAddress === address)
-    .reduce((sum, r) => sum + r.price, 0);
+    .reduce((sum, r) => {
+      // Saatlik ücret * saat sayısı
+      const rentalCost = r.gpu.pricePerHour * r.hours;
+      return sum + rentalCost;
+    }, 0);
+};
+
+const calculateEarnings = (rentals: RentalHistory[], address: string) => {
+  return rentals
+    .filter(r => r.gpu.creator?.address === address)
+    .reduce((sum, r) => {
+      const rentalCost = r.gpu.pricePerHour * r.hours;
+      return sum + rentalCost;
+    }, 0);
 };
 
 const calculatePerformance = (rentals: RentalHistory[]) => {
   if (rentals.length === 0) return 0;
-  return rentals.reduce((sum, r) => sum + (r.performanceMetrics?.successRate || 0), 0) / rentals.length;
+  return rentals.reduce((sum, r) => {
+    const usageStats = r.usageStats || { gpuUsage: 0 };
+    return sum + (usageStats.gpuUsage || 0);
+  }, 0) / rentals.length;
 };
 
 const calculateTotal = (data: ActivityData[], key: keyof ActivityData) => {
