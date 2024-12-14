@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { UserProfile } from '../../types/user';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { formatSOL } from '../../utils/format';
 import { Cpu, HardDrive, Activity, DollarSign, TrendingUp } from 'lucide-react';
 import { useRentals } from '../../hooks/useRentals';
 import { RentalHistory } from '../../types/rental';
+import { PublicKey } from '@solana/web3.js';
 
 interface ProfileStatsProps {
   profile: UserProfile;
@@ -20,7 +21,8 @@ interface ActivityData {
 
 export const ProfileStats: React.FC<ProfileStatsProps> = ({ profile }) => {
   const [activityData, setActivityData] = useState<ActivityData[]>([]);
-  const { rentals } = useRentals(window.solana?.publicKey);
+  const publicKey = window.solana?.publicKey ? new PublicKey(window.solana.publicKey) : undefined;
+  const { rentals } = useRentals(publicKey);
 
   useEffect(() => {
     const updateActivityData = () => {
@@ -67,6 +69,12 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({ profile }) => {
     return () => clearInterval(interval);
   }, [rentals, profile.address]);
 
+  // Toplam harcama ve kazançları hesapla
+  const totalSpending = activityData.reduce((sum, data) => sum + data.spending, 0);
+  const totalEarnings = activityData.reduce((sum, data) => sum + data.earnings, 0);
+  const activeRentalsCount = activityData[activityData.length - 1]?.activeRentals || 0;
+  const averagePerformance = Math.round(activityData[activityData.length - 1]?.performance || 0);
+
   return (
     <div className="bg-dark-800 rounded-xl p-6 border border-dark-700">
       <div className="flex items-center justify-between mb-6">
@@ -109,17 +117,9 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({ profile }) => {
               }}
               labelStyle={{ color: '#9CA3AF' }}
               itemStyle={{ color: '#E5E7EB' }}
-              formatter={(value: number) => [`${value.toFixed(3)} SOL`, '']}
+              formatter={(value: number) => [`${formatSOL(value)} SOL`, '']}
             />
 
-            <Area
-              type="monotone"
-              dataKey="earnings"
-              name="Earnings"
-              stroke="#10B981"
-              fillOpacity={1}
-              fill="url(#colorEarnings)"
-            />
             <Area
               type="monotone"
               dataKey="spending"
@@ -128,6 +128,14 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({ profile }) => {
               fillOpacity={1}
               fill="url(#colorSpending)"
             />
+            <Area
+              type="monotone"
+              dataKey="earnings"
+              name="Earnings"
+              stroke="#10B981"
+              fillOpacity={1}
+              fill="url(#colorEarnings)"
+            />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -135,65 +143,33 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({ profile }) => {
       <div className="grid grid-cols-4 gap-4 mt-6">
         <StatCard
           label="Active Rentals"
-          value={activityData[activityData.length - 1]?.activeRentals || 0}
+          value={activeRentalsCount}
           icon={Activity}
-          trend={10}
-        />
-        <StatCard
-          label="24h Earnings"
-          value={formatSOL(calculateTotal(activityData, 'earnings'))}
-          icon={DollarSign}
-          trend={15}
-          isCurrency
+          trend={0}
         />
         <StatCard
           label="24h Spending"
-          value={formatSOL(calculateTotal(activityData, 'spending'))}
+          value={formatSOL(totalSpending)}
           icon={DollarSign}
           trend={-5}
           isCurrency
         />
         <StatCard
+          label="24h Earnings"
+          value={formatSOL(totalEarnings)}
+          icon={DollarSign}
+          trend={15}
+          isCurrency
+        />
+        <StatCard
           label="Performance"
-          value={`${Math.round(activityData[activityData.length - 1]?.performance || 0)}%`}
+          value={`${averagePerformance}%`}
           icon={TrendingUp}
           trend={8}
         />
       </div>
     </div>
   );
-};
-
-// Yardımcı fonksiyonları güncelle
-const calculateSpending = (rentals: RentalHistory[], address: string) => {
-  return rentals
-    .filter(r => r.renterAddress === address)
-    .reduce((sum, r) => {
-      // Saatlik ücret * saat sayısı
-      const rentalCost = r.gpu.pricePerHour * r.hours;
-      return sum + rentalCost;
-    }, 0);
-};
-
-const calculateEarnings = (rentals: RentalHistory[], address: string) => {
-  return rentals
-    .filter(r => r.gpu.creator?.address === address)
-    .reduce((sum, r) => {
-      const rentalCost = r.gpu.pricePerHour * r.hours;
-      return sum + rentalCost;
-    }, 0);
-};
-
-const calculatePerformance = (rentals: RentalHistory[]) => {
-  if (rentals.length === 0) return 0;
-  return rentals.reduce((sum, r) => {
-    const usageStats = r.usageStats || { gpuUsage: 0 };
-    return sum + (usageStats.gpuUsage || 0);
-  }, 0) / rentals.length;
-};
-
-const calculateTotal = (data: ActivityData[], key: keyof ActivityData) => {
-  return data.reduce((sum, item) => sum + (typeof item[key] === 'number' ? Number(item[key]) : 0), 0);
 };
 
 interface StatCardProps {
@@ -211,11 +187,21 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, icon: Icon, trend, is
       <Icon className="w-4 h-4 text-glow-400" />
     </div>
     <div className="flex items-end justify-between">
-      <span className="text-2xl font-bold text-white">{value}</span>
+      <span className="text-2xl font-bold text-white">
+        {isCurrency ? `${value} SOL` : value}
+      </span>
       <div className={`flex items-center text-sm ${trend >= 0 ? 'text-green-400' : 'text-red-400'}`}>
         <TrendingUp className={`w-4 h-4 ${trend < 0 ? 'transform rotate-180' : ''}`} />
         <span>{Math.abs(trend)}%</span>
       </div>
     </div>
   </div>
-); 
+);
+
+const calculatePerformance = (rentals: RentalHistory[]) => {
+  if (rentals.length === 0) return 0;
+  return rentals.reduce((sum, r) => {
+    const usageStats = r.usageStats || { gpuUsage: 0 };
+    return sum + (usageStats.gpuUsage || 0);
+  }, 0) / rentals.length;
+}; 
