@@ -1,5 +1,6 @@
 import { UserProfile } from '../types/user';
 import { generateAvatarUrl } from '../utils/avatar';
+import { RentalHistory } from '../types/rental';
 
 const ACCOUNTS_KEY = 'dgpu_accounts';
 
@@ -9,6 +10,37 @@ export interface AccountStats {
   totalEarned: number;
   successRate: number;
   reputation: number;
+}
+
+export interface AccountActivity {
+  type: 'rental' | 'listing' | 'review' | 'badge' | 'level_up';
+  timestamp: Date;
+  details: {
+    title: string;
+    description: string;
+    amount?: number;
+    rating?: number;
+    badgeId?: string;
+    level?: string;
+  };
+}
+
+export interface AccountSettings {
+  notifications: {
+    email: boolean;
+    rental: boolean;
+    marketing: boolean;
+  };
+  privacy: {
+    showActivity: boolean;
+    showStats: boolean;
+    showRentals: boolean;
+  };
+  preferences: {
+    theme: 'dark' | 'light';
+    currency: 'SOL' | 'USD';
+    language: string;
+  };
 }
 
 class AccountService {
@@ -103,6 +135,69 @@ class AccountService {
       successRate: account.reputation.successRate,
       reputation: account.reputation.score
     };
+  }
+
+  async updateStats(address: string, rental: RentalHistory): Promise<void> {
+    const account = await this.getAccount(address);
+    if (!account) return;
+
+    account.stats.totalSpent += rental.price;
+    account.reputation.totalRentals += 1;
+    account.reputation.successRate = this.calculateSuccessRate(account);
+    
+    const newLevel = this.calculateLevel(account);
+    if (newLevel !== account.reputation.level) {
+      account.reputation.level = newLevel;
+      this.addActivity(address, {
+        type: 'level_up',
+        timestamp: new Date(),
+        details: {
+          title: 'Level Up!',
+          description: `Congratulations! You've reached ${newLevel} level`,
+          level: newLevel
+        }
+      });
+    }
+
+    await this.saveAccount(account);
+  }
+
+  async addActivity(address: string, activity: AccountActivity): Promise<void> {
+    const account = await this.getAccount(address);
+    if (!account) return;
+
+    account.activity = [activity, ...account.activity].slice(0, 50);
+    await this.saveAccount(account);
+  }
+
+  async updateSettings(address: string, settings: Partial<AccountSettings>): Promise<void> {
+    const account = await this.getAccount(address);
+    if (!account) return;
+
+    account.settings = { ...account.settings, ...settings };
+    await this.saveAccount(account);
+  }
+
+  private calculateLevel(account: UserProfile): string {
+    const { totalRentals, successRate } = account.reputation;
+    const { totalSpent } = account.stats;
+
+    if (totalRentals >= 100 && successRate >= 95 && totalSpent >= 100) return 'Elite';
+    if (totalRentals >= 50 && successRate >= 90 && totalSpent >= 50) return 'Expert';
+    if (totalRentals >= 20 && successRate >= 85 && totalSpent >= 20) return 'Trusted';
+    if (totalRentals >= 5 && successRate >= 80 && totalSpent >= 5) return 'Regular';
+    return 'Newcomer';
+  }
+
+  private calculateSuccessRate(account: UserProfile): number {
+    return 100;
+  }
+
+  async getLeaderboard(): Promise<UserProfile[]> {
+    const accounts = await this.getAllAccounts();
+    return accounts
+      .sort((a, b) => b.reputation.score - a.reputation.score)
+      .slice(0, 10);
   }
 }
 
