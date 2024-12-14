@@ -33,7 +33,7 @@ export const ParticleBackground: React.FC = () => {
     // Partikülleri oluştur
     const createParticles = () => {
       const particles: Particle[] = [];
-      const particleCount = Math.floor((canvas.width * canvas.height) / 8000);
+      const particleCount = Math.floor((canvas.width * canvas.height) / 2000);
 
       for (let i = 0; i < particleCount; i++) {
         particles.push({
