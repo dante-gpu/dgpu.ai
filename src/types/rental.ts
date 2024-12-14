@@ -11,6 +11,7 @@ export interface UsageStats {
   memoryUsage: number;
   powerUsage: number;
   temperature: number;
+  gpuUsage: number;
 }
 
 export interface PerformanceMetrics {
@@ -26,6 +27,8 @@ export interface RentalHistory {
   price: number;
   timestamp: Date;
   status: 'active' | 'completed' | 'expired';
+  renterAddress: string;
+  transactionSignature?: string;
   timer?: RentalTimer;
   aiModel?: AIModel;
   usageStats?: UsageStats;

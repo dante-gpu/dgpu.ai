@@ -1,75 +1,96 @@
-import { useState } from 'react';
-import { GPU } from '../types/gpu';
-import { PublicKey } from '@solana/web3.js';
-import { createPaymentTransaction } from '../utils/solana';
+import { useState, useEffect } from 'react';
 import { RentalHistory } from '../types/rental';
+import { PublicKey } from '@solana/web3.js';
+import { GPU } from '../types/gpu';
+import { createRental, getRentals, updateRentalStatus, syncTransactionHistory } from '../services/rental';
+import { useConnection } from '@solana/wallet-adapter-react';
+import { Connection, LAMPORTS_PER_SOL } from '@solana/web3.js';
 
-export const useRentals = () => {
+export const useRentals = (publicKey?: PublicKey) => {
   const [rentals, setRentals] = useState<RentalHistory[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { connection } = useConnection();
 
-  const handleRent = async (gpu: GPU, hours: number, userPublicKey: PublicKey) => {
+  useEffect(() => {
+    const loadRentals = async () => {
+      if (publicKey) {
+        setLoading(true);
+        try {
+          // Blockchain ile senkronize et
+          await syncTransactionHistory(connection, publicKey);
+          // Güncel rental history'yi getir
+          const userRentals = await getRentals(publicKey.toBase58());
+          setRentals(userRentals);
+        } catch (error) {
+          console.error('Error loading rentals:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadRentals();
+    
+    // Her 30 saniyede bir güncelle
+    const interval = setInterval(loadRentals, 30000);
+    return () => clearInterval(interval);
+  }, [publicKey, connection]);
+
+  const handleRent = async (gpu: GPU, hours: number, publicKey: PublicKey) => {
     try {
-      if (!window.solflare) {
-        throw new Error('Solflare not found');
+      // Bakiye kontrolü
+      const connection = new Connection(process.env.VITE_SOLANA_RPC_URL || 'https://api.devnet.solana.com');
+      const balance = await connection.getBalance(publicKey);
+      const totalPrice = gpu.pricePerHour * hours;
+      const totalLamports = Math.floor(totalPrice * LAMPORTS_PER_SOL);
+      
+      if (balance < totalLamports) {
+        throw new Error(`Insufficient balance. Required: ${totalPrice} SOL`);
       }
 
-      if (!window.solflare.isConnected) {
-        await window.solflare.connect();
-      }
-
-      // Transaction'ı oluştur
-      const transaction = await createPaymentTransaction(
-        userPublicKey,
-        gpu.pricePerHour * hours
+      // Kiralama işlemini başlat
+      const rental = await createRental(
+        gpu,
+        hours,
+        totalPrice,
+        publicKey
       );
 
-      // İmza için cüzdana gönder
-      const signature = await window.solflare.signAndSendTransaction(transaction);
-
-      if (signature) {
-        // Başarılı işlem
-        const newRental: RentalHistory = {
-          id: signature.signature,
-          gpu,
-          hours,
-          price: gpu.pricePerHour * hours,
-          timestamp: new Date(),
-          status: 'active',
-          timer: {
-            endTime: new Date(Date.now() + hours * 60 * 60 * 1000),
-            remainingTime: hours * 60 * 60
-          }
-        };
-
-        setRentals(prev => [...prev, newRental]);
-        return { success: true, signature };
-      }
-
-      return { success: false };
+      setRentals(prev => [...prev, rental]);
+      return { 
+        success: true, 
+        rental, 
+        signature: rental.transactionSignature 
+      };
     } catch (error) {
-      console.error('Rental transaction error:', error);
-      throw error;
+      console.error('Error creating rental:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Transaction failed',
+        details: error
+      };
     }
   };
 
-  const handleExpire = (rentalId: string) => {
-    setRentals(prev =>
-      prev.map(rental =>
-        rental.id === rentalId
-          ? { ...rental, status: 'expired' }
-          : rental
-      )
-    );
+  const handleExpire = async (rentalId: string) => {
+    try {
+      await updateRentalStatus(rentalId, 'expired');
+      setRentals(prev => 
+        prev.map(r => r.id === rentalId ? { ...r, status: 'expired' } : r)
+      );
+    } catch (error) {
+      console.error('Error expiring rental:', error);
+    }
   };
 
-  const getTotalSpent = () => {
-    return rentals.reduce((total, rental) => total + rental.price, 0);
-  };
+  const getTotalSpent = () => 
+    rentals.reduce((sum, rental) => sum + rental.price, 0);
 
   return {
     rentals,
+    loading,
     handleRent,
     handleExpire,
-    getTotalSpent,
+    getTotalSpent
   };
 };

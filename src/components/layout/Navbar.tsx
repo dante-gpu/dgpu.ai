@@ -1,8 +1,9 @@
 import React from 'react';
 import { WalletButton } from '../wallet/WalletButton';
 import { NavButton } from '../ui/NavButton';
-import { Store, Brain, LayoutDashboard, MessageSquare } from 'lucide-react';
+import { Store, Brain, LayoutDashboard, MessageSquare, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { GlobalSearch } from '../search/GlobalSearch';
 
 const ADMIN_WALLET = "B99ZeAHD4ZxGfSwbQRqbpQPpAigzwDCyx4ShHTcYCAtS";
 
@@ -65,13 +66,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
           
-          <WalletButton
-            onConnect={onConnect}
-            onDisconnect={onDisconnect}
-            connected={connected}
-            connecting={connecting}
-            walletAddress={walletAddress}
-          />
+          <div className="flex items-center gap-4">
+            <GlobalSearch />
+            
+            <WalletButton
+              onConnect={onConnect}
+              onDisconnect={onDisconnect}
+              connected={connected}
+              connecting={connecting}
+              walletAddress={walletAddress}
+            />
+          </div>
         </div>
       </div>
     </nav>

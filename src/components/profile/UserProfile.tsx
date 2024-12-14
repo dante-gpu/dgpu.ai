@@ -1,6 +1,9 @@
 import React from 'react';
 import { UserProfile as UserProfileType } from '../../types/user';
 import { Shield, Star, Award, Clock, Activity, Zap } from 'lucide-react';
+import { ProfileStats } from './ProfileStats';
+import { Achievements } from './Achievements';
+import { generateAvatarUrl } from '../../utils/avatar';
 
 interface UserProfileProps {
   profile: UserProfileType;
@@ -14,6 +17,8 @@ export const UserProfile: React.FC<UserProfileProps> = ({ profile }) => {
     return 'text-gray-400';
   };
 
+  const avatarUrl = generateAvatarUrl(profile.address);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -21,7 +26,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ profile }) => {
         <div className="flex items-center gap-6">
           <div className="relative">
             <img
-              src={profile.avatarUrl}
+              src={avatarUrl}
               alt={profile.username || profile.address}
               className="w-24 h-24 rounded-xl border-2 border-glow-400/20"
             />
@@ -119,6 +124,9 @@ export const UserProfile: React.FC<UserProfileProps> = ({ profile }) => {
           </div>
         </div>
       </div>
+
+      <ProfileStats profile={profile} />
+      <Achievements profile={profile} />
 
       {/* Recent Activity */}
       <div className="bg-dark-800 rounded-xl p-6 border border-dark-700">

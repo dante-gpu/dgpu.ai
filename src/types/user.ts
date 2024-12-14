@@ -41,6 +41,7 @@ export interface UserActivity {
     badge?: Badge;
     rating?: number;
     review?: string;
+    amount?: number;
   };
 }
 

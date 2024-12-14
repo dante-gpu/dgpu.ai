@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { UserProfile } from '../components/profile/UserProfile';
 import { EditProfileModal } from '../components/profile/EditProfileModal';
-import { getUserProfile, saveUserProfile, updateReputation } from '../services/reputation';
+import { getUserProfile, saveUserProfile } from '../services/reputation';
 import { UserProfile as UserProfileType } from '../types/user';
 import { useToast } from '../hooks/useToast';
 import { Edit } from 'lucide-react';
+import { generateAvatarUrl } from '../utils/avatar';
 
 export const ProfilePage: React.FC = () => {
   const { address } = useParams<{ address: string }>();
@@ -20,12 +21,16 @@ export const ProfilePage: React.FC = () => {
       if (address) {
         const userProfile = await getUserProfile(address);
         if (userProfile) {
-          setProfile(userProfile);
+          const updatedProfile = {
+            ...userProfile,
+            avatarUrl: generateAvatarUrl(address)
+          };
+          await saveUserProfile(updatedProfile);
+          setProfile(updatedProfile);
         } else {
-          // Yeni profil oluştur
           const newProfile: UserProfileType = {
             address,
-            avatarUrl: `https://api.dicebear.com/7.x/identicon/svg?seed=${address}`,
+            avatarUrl: generateAvatarUrl(address),
             joinedAt: new Date().toISOString(),
             reputation: {
               score: 0,

@@ -13,5 +13,10 @@ declare global {
       on: (event: string, handler: () => void) => void;
       off: (event: string, handler: () => void) => void;
     };
+    solana?: {
+      publicKey?: {
+        toBase58: () => string;
+      };
+    };
   }
 }
