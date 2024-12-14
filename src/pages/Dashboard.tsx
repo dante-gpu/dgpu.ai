@@ -164,7 +164,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 {rental.usageStats && (
                   <div className="mt-6 pt-6 border-t border-dark-700">
                     <h4 className="text-sm font-medium text-gray-400 mb-4">Resource Usage</h4>
-                    <UsageChart stats={rental.usageStats} />
+                    <UsageChart rentals={rentals} />
                   </div>
                 )}
               </div>
