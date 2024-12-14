@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { MainLayout } from './layouts/MainLayout';
 import { MarketplacePage } from './pages/MarketplacePage';
-import { Dashboard } from './components/Dashboard';
+import { Dashboard } from './pages/Dashboard';
 import { ChatPage } from './pages/ChatPage';
 import { AIModelsPage } from './pages/AIModelsPage';
 import { useWallet } from './hooks/useWallet';
@@ -38,31 +39,6 @@ function App() {
     }
   };
 
-  const renderContent = () => {
-    switch (currentView) {
-      case 'dashboard':
-        return (
-          <Dashboard 
-            rentals={rentals} 
-            totalSpent={getTotalSpent()}
-            onExpire={handleExpire}
-          />
-        );
-      case 'chat':
-        return <ChatPage />;
-      case 'ai-models':
-        return <AIModelsPage />;
-      default:
-        return (
-          <MarketplacePage
-            onRent={onRent}
-            connected={connected}
-            balance={balance}
-          />
-        );
-    }
-  };
-
   return (
     <MainLayout
       connected={connected}
@@ -75,7 +51,25 @@ function App() {
       toasts={toasts}
       onRemoveToast={removeToast}
     >
-      {renderContent()}
+      <Routes>
+        <Route path="/" element={
+          <MarketplacePage
+            onRent={onRent}
+            connected={connected}
+            balance={balance}
+          />
+        } />
+        <Route path="/dashboard" element={
+          <Dashboard 
+            rentals={rentals} 
+            totalSpent={getTotalSpent()}
+            onExpire={handleExpire}
+          />
+        } />
+        <Route path="/chat" element={<ChatPage />} />
+        <Route path="/ai-models" element={<AIModelsPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </MainLayout>
   );
 }
