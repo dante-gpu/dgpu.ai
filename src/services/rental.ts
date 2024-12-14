@@ -9,6 +9,9 @@ const MAX_RENTALS = 100; // Maksimum saklayacağımız kiralama sayısı
 // Platform cüzdan adresi (Devnet için)
 const PLATFORM_WALLET = "DZKzDMbq3HpwAqP3H9UwKqpgUteLFxGKHVVuFjqoqkXk";
 
+// Devnet RPC URL'sini tanımla
+const SOLANA_RPC_URL = import.meta.env.VITE_SOLANA_RPC_URL || 'https://api.devnet.solana.com';
+
 export const saveRental = async (rental: RentalHistory) => {
   try {
     const rentals = await getRentals();
@@ -80,7 +83,7 @@ export const createRental = async (
 ): Promise<RentalHistory> => {
   try {
     // Solana connection'ı oluştur
-    const connection = new Connection(process.env.VITE_SOLANA_RPC_URL || 'https://api.devnet.solana.com');
+    const connection = new Connection(SOLANA_RPC_URL);
     
     // Transaction'ı oluştur
     const transaction = new Transaction();

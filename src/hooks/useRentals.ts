@@ -6,6 +6,9 @@ import { createRental, getRentals, updateRentalStatus, syncTransactionHistory } 
 import { useConnection } from '@solana/wallet-adapter-react';
 import { Connection, LAMPORTS_PER_SOL } from '@solana/web3.js';
 
+// Devnet RPC URL'sini tanımla
+const SOLANA_RPC_URL = import.meta.env.VITE_SOLANA_RPC_URL || 'https://api.devnet.solana.com';
+
 export const useRentals = (publicKey?: PublicKey) => {
   const [rentals, setRentals] = useState<RentalHistory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +42,7 @@ export const useRentals = (publicKey?: PublicKey) => {
   const handleRent = async (gpu: GPU, hours: number, publicKey: PublicKey) => {
     try {
       // Bakiye kontrolü
-      const connection = new Connection(process.env.VITE_SOLANA_RPC_URL || 'https://api.devnet.solana.com');
+      const connection = new Connection(SOLANA_RPC_URL);
       const balance = await connection.getBalance(publicKey);
       const totalPrice = gpu.pricePerHour * hours;
       const totalLamports = Math.floor(totalPrice * LAMPORTS_PER_SOL);
