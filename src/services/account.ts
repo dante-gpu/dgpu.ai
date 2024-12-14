@@ -1,6 +1,7 @@
 import { UserProfile } from '../types/user';
 import { generateAvatarUrl } from '../utils/avatar';
 import { RentalHistory } from '../types/rental';
+import { UserActivity } from '../types/user';
 
 const ACCOUNTS_KEY = 'dgpu_accounts';
 
@@ -70,7 +71,24 @@ class AccountService {
         totalEarned: 0,
         averageRating: 0
       },
-      activity: []
+      activity: [],
+      settings: {
+        notifications: {
+          email: true,
+          rental: true,
+          marketing: false
+        },
+        privacy: {
+          showActivity: true,
+          showStats: true,
+          showRentals: true
+        },
+        preferences: {
+          theme: 'dark',
+          currency: 'SOL',
+          language: 'en'
+        }
+      }
     };
 
     await this.saveAccount(newAccount);
@@ -162,11 +180,16 @@ class AccountService {
     await this.saveAccount(account);
   }
 
-  async addActivity(address: string, activity: AccountActivity): Promise<void> {
+  async addActivity(address: string, activity: Omit<UserActivity, 'id'>): Promise<void> {
     const account = await this.getAccount(address);
     if (!account) return;
 
-    account.activity = [activity, ...account.activity].slice(0, 50);
+    const newActivity: UserActivity = {
+      id: crypto.randomUUID(),
+      ...activity
+    };
+
+    account.activity = [newActivity, ...account.activity].slice(0, 50);
     await this.saveAccount(account);
   }
 
@@ -198,6 +221,11 @@ class AccountService {
     return accounts
       .sort((a, b) => b.reputation.score - a.reputation.score)
       .slice(0, 10);
+  }
+
+  async getAccount(address: string): Promise<UserProfile | null> {
+    const accounts = await this.getAllAccounts();
+    return accounts.find(a => a.address === address) || null;
   }
 }
 

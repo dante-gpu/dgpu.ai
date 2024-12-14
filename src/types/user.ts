@@ -1,3 +1,5 @@
+import { AccountSettings } from '../services/account';
+
 export interface UserProfile {
   address: string;
   avatarUrl: string;
@@ -19,6 +21,7 @@ export interface UserProfile {
     averageRating: number;
   };
   activity: UserActivity[];
+  settings: AccountSettings;
 }
 
 export interface Badge {
@@ -31,17 +34,15 @@ export interface Badge {
 
 export interface UserActivity {
   id: string;
-  type: 'rental' | 'listing' | 'review' | 'badge';
-  timestamp: string;
+  type: 'rental' | 'listing' | 'review' | 'badge' | 'level_up';
+  timestamp: Date;
   details: {
-    gpu?: {
-      id: string;
-      name: string;
-    };
-    badge?: Badge;
-    rating?: number;
-    review?: string;
+    title: string;
+    description: string;
     amount?: number;
+    rating?: number;
+    badgeId?: string;
+    level?: string;
   };
 }
 
