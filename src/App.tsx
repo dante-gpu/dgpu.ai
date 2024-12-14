@@ -10,6 +10,7 @@ import { useRentals } from './hooks/useRentals';
 import { useToast } from './hooks/useToast';
 import { useWalletBalance } from './hooks/useWalletBalance';
 import { GPU } from './types/gpu';
+import { ProfilePage } from './pages/ProfilePage';
 
 type View = 'marketplace' | 'dashboard' | 'chat' | 'ai-models';
 
@@ -69,6 +70,7 @@ function App() {
         } />
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/ai-models" element={<AIModelsPage />} />
+        <Route path="/profile/:address" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </MainLayout>

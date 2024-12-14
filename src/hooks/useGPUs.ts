@@ -41,9 +41,7 @@ export const useGPUs = () => {
 
   const deleteGPU = async (gpu: GPU) => {
     try {
-      const gpus = localDB.getGPUs();
-      const filtered = gpus.filter(g => g.id !== gpu.id);
-      localDB.saveGPUs(filtered);
+      localDB.deleteGPU(gpu.id);
     } catch (error) {
       console.error('Error deleting GPU:', error);
       throw error;

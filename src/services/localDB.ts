@@ -35,6 +35,11 @@ export const localDB = {
     return loadGPUs();
   },
 
+  // Save GPUs
+  saveGPUs: (gpus: GPU[]) => {
+    saveGPUs(gpus);
+  },
+
   // Add new GPU
   addGPU: (gpu: Omit<GPU, 'id'>) => {
     const gpus = loadGPUs();
@@ -46,18 +51,6 @@ export const localDB = {
     gpus.push(newGPU);
     saveGPUs(gpus);
     return newGPU;
-  },
-
-  // Update GPU
-  updateGPU: (id: string, updates: Partial<GPU>) => {
-    const gpus = loadGPUs();
-    const index = gpus.findIndex(gpu => gpu.id === id);
-    if (index !== -1) {
-      gpus[index] = { ...gpus[index], ...updates };
-      saveGPUs(gpus);
-      return gpus[index];
-    }
-    return null;
   },
 
   // Delete GPU

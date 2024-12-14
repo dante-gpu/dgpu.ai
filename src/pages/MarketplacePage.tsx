@@ -38,6 +38,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
         await deleteGPU(gpu);
         showToast('GPU deleted successfully', 'success');
       } catch (error) {
+        console.error('Error deleting GPU:', error);
         showToast('Failed to delete GPU', 'error');
       }
     }
