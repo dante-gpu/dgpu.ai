@@ -168,8 +168,9 @@ class AccountService {
       account.reputation.level = newLevel;
       this.addActivity(address, {
         type: 'level_up',
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
         details: {
+          type: 'level_up',
           title: 'Level Up!',
           description: `Congratulations! You've reached ${newLevel} level`,
           level: newLevel
@@ -186,7 +187,8 @@ class AccountService {
 
     const newActivity: UserActivity = {
       id: crypto.randomUUID(),
-      ...activity
+      ...activity,
+      timestamp: new Date().toISOString()
     };
 
     account.activity = [newActivity, ...account.activity].slice(0, 50);

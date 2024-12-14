@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { UserProfile } from '../components/profile/UserProfile';
 import { EditProfileModal } from '../components/profile/EditProfileModal';
 import { getUserProfile, saveUserProfile } from '../services/reputation';
 import { UserProfile as UserProfileType } from '../types/user';
 import { useToast } from '../hooks/useToast';
-import { Edit } from 'lucide-react';
+import { Edit, LayoutDashboard, Settings } from 'lucide-react';
 import { generateAvatarUrl } from '../utils/avatar';
+import { LeaderboardPanel } from '../components/profile/LeaderboardPanel';
 
 export const ProfilePage: React.FC = () => {
   const { address } = useParams<{ address: string }>();
@@ -15,6 +16,7 @@ export const ProfilePage: React.FC = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const { showToast } = useToast();
   const isOwnProfile = address === window.solana?.publicKey?.toBase58();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -46,7 +48,24 @@ export const ProfilePage: React.FC = () => {
               totalEarned: 0,
               averageRating: 0
             },
-            activity: []
+            activity: [],
+            settings: {
+              notifications: {
+                email: true,
+                rental: true,
+                marketing: false
+              },
+              privacy: {
+                showActivity: true,
+                showStats: true,
+                showRentals: true
+              },
+              preferences: {
+                theme: 'dark',
+                currency: 'SOL',
+                language: 'en'
+              }
+            }
           };
           await saveUserProfile(newProfile);
           setProfile(newProfile);
@@ -91,19 +110,46 @@ export const ProfilePage: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      {isOwnProfile && (
-        <div className="flex justify-end mb-4">
-          <button
-            onClick={() => setShowEditModal(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-dark-700 hover:bg-dark-600 transition-colors text-gray-300"
-          >
-            <Edit size={16} />
-            <span>Edit Profile</span>
-          </button>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+        <div className="lg:col-span-2">
+          <UserProfile profile={profile} />
         </div>
-      )}
-
-      <UserProfile profile={profile} />
+        
+        <div className="space-y-6">
+          <LeaderboardPanel />
+          
+          {isOwnProfile && (
+            <div className="bg-dark-800 rounded-xl p-6 border border-dark-700">
+              <h3 className="text-lg font-medium text-white mb-4">Quick Actions</h3>
+              <div className="space-y-3">
+                <button
+                  onClick={() => setShowEditModal(true)}
+                  className="w-full flex items-center gap-2 px-4 py-2 rounded-lg bg-dark-700 hover:bg-dark-600 transition-colors text-gray-300"
+                >
+                  <Edit size={16} />
+                  <span>Edit Profile</span>
+                </button>
+                
+                <button
+                  onClick={() => navigate('/dashboard')}
+                  className="w-full flex items-center gap-2 px-4 py-2 rounded-lg bg-dark-700 hover:bg-dark-600 transition-colors text-gray-300"
+                >
+                  <LayoutDashboard size={16} />
+                  <span>View Dashboard</span>
+                </button>
+                
+                <button
+                  onClick={() => navigate('/settings')}
+                  className="w-full flex items-center gap-2 px-4 py-2 rounded-lg bg-dark-700 hover:bg-dark-600 transition-colors text-gray-300"
+                >
+                  <Settings size={16} />
+                  <span>Account Settings</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       {isOwnProfile && showEditModal && (
         <EditProfileModal

@@ -35,15 +35,45 @@ export interface Badge {
 export interface UserActivity {
   id: string;
   type: 'rental' | 'listing' | 'review' | 'badge' | 'level_up';
-  timestamp: Date;
-  details: {
-    title: string;
-    description: string;
-    amount?: number;
-    rating?: number;
-    badgeId?: string;
-    level?: string;
+  timestamp: string;
+  details: RentalDetails | ListingDetails | ReviewDetails | BadgeDetails | LevelUpDetails;
+}
+
+interface BaseDetails {
+  title: string;
+  description: string;
+  amount?: number;
+}
+
+interface RentalDetails extends BaseDetails {
+  type: 'rental';
+  gpu: {
+    id: string;
+    name: string;
   };
+}
+
+interface ListingDetails extends BaseDetails {
+  type: 'listing';
+  gpu: {
+    id: string;
+    name: string;
+  };
+}
+
+interface ReviewDetails extends BaseDetails {
+  type: 'review';
+  rating: number;
+}
+
+interface BadgeDetails extends BaseDetails {
+  type: 'badge';
+  badge: Badge;
+}
+
+interface LevelUpDetails extends BaseDetails {
+  type: 'level_up';
+  level: string;
 }
 
 export type ReputationLevel = 
