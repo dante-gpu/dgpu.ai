@@ -22,8 +22,13 @@ export const AIModelCard: React.FC<AIModelCardProps> = ({
   const [hours, setHours] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const totalPrice = model.pricePerHour * hours;
 
   const handleRent = () => {
+    if (!userBalance || totalPrice > userBalance) {
+      alert('Insufficient balance!');
+      return;
+    }
     setShowConfirmModal(true);
   };
 
@@ -39,15 +44,15 @@ export const AIModelCard: React.FC<AIModelCardProps> = ({
 
   return (
     <>
-      <div className="bg-gray-900 rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-purple-600/20 hover:scale-[1.02] border border-gray-800">
+      <div className="bg-dark-800 rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-glow-500/20 hover:scale-[1.02] border border-dark-700">
         <div className="relative">
           <img
             src={model.imageUrl}
             alt={model.name}
             className="w-full h-48 object-cover"
           />
-          <div className="absolute top-2 right-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
-            {model.type === 'training' ? 'Training' : 'Inference'}
+          <div className="absolute top-2 right-2 bg-gradient-to-r from-glow-400 to-glow-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
+            {model.type}
           </div>
         </div>
 
@@ -75,7 +80,7 @@ export const AIModelCard: React.FC<AIModelCardProps> = ({
               {model.features.map((feature, index) => (
                 <span
                   key={index}
-                  className="px-2 py-1 bg-gray-800 text-gray-300 rounded-full text-xs"
+                  className="px-2 py-1 bg-dark-700 text-gray-300 rounded-full text-xs"
                 >
                   {feature}
                 </span>
@@ -88,11 +93,11 @@ export const AIModelCard: React.FC<AIModelCardProps> = ({
             onChange={setHours}
           />
 
-          <div className="flex items-center justify-between pt-4 border-t border-gray-800">
+          <div className="flex items-center justify-between pt-4 border-t border-dark-700">
             <div>
               <span className="text-sm text-gray-400">Total Price</span>
-              <p className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-300">
-                {formatSOL(model.pricePerHour * hours)} SOL
+              <p className="text-lg font-bold gradient-text">
+                {formatSOL(totalPrice)} SOL
               </p>
             </div>
             <Button
@@ -108,9 +113,9 @@ export const AIModelCard: React.FC<AIModelCardProps> = ({
       </div>
 
       <RentalConfirmModal
-        gpu={model}
+        gpu={model.gpu}
         hours={hours}
-        totalPrice={model.pricePerHour * hours}
+        totalPrice={totalPrice}
         onConfirm={confirmRental}
         onCancel={() => setShowConfirmModal(false)}
         isOpen={showConfirmModal}
