@@ -1,7 +1,4 @@
 import React from 'react';
-import { WalletIcon } from 'lucide-react';
-import { Button } from '../ui/Button';
-import { WalletMenu } from './WalletMenu';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
 
 interface WalletButtonProps {
@@ -11,6 +8,11 @@ interface WalletButtonProps {
   connecting: boolean;
   walletAddress?: string;
 }
+
+const formatAddress = (address?: string) => {
+  if (!address) return '';
+  return `${address.slice(0, 4)}...${address.slice(-4)}`;
+};
 
 export const WalletButton: React.FC<WalletButtonProps> = ({
   onConnect,
