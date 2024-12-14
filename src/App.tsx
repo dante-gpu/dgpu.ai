@@ -13,8 +13,9 @@ import { GPU } from './types/gpu';
 import { ProfilePage } from './pages/ProfilePage';
 import { accountService } from './services/account';
 import { ParticleBackground } from './components/ui/ParticleBackground';
+import { SettingsPage } from './pages/SettingsPage';
 
-type View = 'marketplace' | 'dashboard' | 'chat' | 'ai-models';
+type View = 'marketplace' | 'dashboard' | 'chat' | 'ai-models' | 'settings';
 
 function App() {
   const { connected, publicKey, connectWallet, disconnectWallet, connecting } = useWallet();
@@ -80,6 +81,7 @@ function App() {
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/ai-models" element={<AIModelsPage />} />
           <Route path="/profile/:address" element={<ProfilePage />} />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </MainLayout>

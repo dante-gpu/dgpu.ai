@@ -1,8 +1,8 @@
 import React from 'react';
 import { WalletButton } from '../wallet/WalletButton';
 import { NavButton } from '../ui/NavButton';
-import { Store, Brain, LayoutDashboard, MessageSquare, User, Home } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Store, Brain, LayoutDashboard, MessageSquare, User, Home, Settings } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
 import { GlobalSearch } from '../search/GlobalSearch';
 import { AccountSearchBar } from '../search/AccountSearchBar';
 
@@ -36,12 +36,66 @@ export const Navbar: React.FC<NavbarProps> = ({
     ...(isAdmin && connected ? [
       { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' }
     ] : []),
-    { id: 'chat', label: 'Chat', icon: MessageSquare, path: '/chat' }
+    { id: 'chat', label: 'Chat', icon: MessageSquare, path: '/chat' },
   ];
 
   const handleNavigation = (path: string) => {
     navigate(path);
   };
+
+  const SettingsButton = () => (
+    <Link 
+      to="/settings"
+      onClick={() => onChangeView('settings')}
+      className={`
+        relative flex items-center gap-2 px-4 py-2 rounded-lg font-medium
+        transition-all duration-300 ease-out group
+        ${currentView === 'settings' 
+          ? 'bg-gradient-to-r from-glow-400/90 to-glow-600/90 text-white shadow-lg shadow-glow-500/20 scale-105' 
+          : 'text-gray-400 hover:text-glow-400'
+        }
+        hover:scale-105
+        overflow-hidden
+      `}
+    >
+      <div className={`
+        absolute inset-0 opacity-50 blur-xl transition-all duration-300
+        ${currentView === 'settings' 
+          ? 'bg-glow-500/20' 
+          : 'bg-transparent group-hover:bg-glow-500/10'
+        }
+      `} />
+
+      <div className="relative flex items-center gap-2">
+        <Settings 
+          size={20} 
+          className={`
+            transition-all duration-300
+            ${currentView === 'settings' ? 'rotate-180' : 'group-hover:rotate-180'}
+          `}
+        />
+        <span className={`
+          transition-all duration-300
+          ${currentView === 'settings'
+            ? 'opacity-100 translate-x-0' 
+            : 'opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0'
+          }
+        `}>
+          Settings
+        </span>
+      </div>
+
+      <div className={`
+        absolute bottom-0 left-0 h-[2px] w-full
+        bg-gradient-to-r from-glow-400 to-glow-600
+        transition-all duration-300
+        ${currentView === 'settings' 
+          ? 'opacity-100' 
+          : 'opacity-0 group-hover:opacity-70'
+        }
+      `} />
+    </Link>
+  );
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-xl border-b border-white/10">
@@ -68,6 +122,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   active={currentView === item.id}
                 />
               ))}
+              <SettingsButton />
             </div>
 
             <div className="ml-8">
