@@ -9,4 +9,11 @@ export interface GPU {
   manufacturer: string;
   model: string;
   createdAt?: string;
+  creator?: {
+    address: string;
+    avatarUrl?: string;
+  };
+  status?: 'available' | 'rented';
+  rentedUntil?: Date;
+  rentedBy?: string;
 }

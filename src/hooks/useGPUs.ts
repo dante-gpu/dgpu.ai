@@ -27,16 +27,23 @@ export const useGPUs = () => {
 
   const updateGPU = async (id: string, updates: Partial<GPU>) => {
     try {
-      return localDB.updateGPU(id, updates);
+      const gpus = localDB.getGPUs();
+      const index = gpus.findIndex(gpu => gpu.id === id);
+      if (index !== -1) {
+        gpus[index] = { ...gpus[index], ...updates };
+        localDB.saveGPUs(gpus);
+      }
     } catch (error) {
       console.error('Error updating GPU:', error);
       throw error;
     }
   };
 
-  const deleteGPU = async (id: string) => {
+  const deleteGPU = async (gpu: GPU) => {
     try {
-      localDB.deleteGPU(id);
+      const gpus = localDB.getGPUs();
+      const filtered = gpus.filter(g => g.id !== gpu.id);
+      localDB.saveGPUs(filtered);
     } catch (error) {
       console.error('Error deleting GPU:', error);
       throw error;

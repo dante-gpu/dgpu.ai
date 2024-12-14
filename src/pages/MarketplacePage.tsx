@@ -4,6 +4,7 @@ import { GPU } from '../types/gpu';
 import { CreateGPUModal } from '../components/gpu/CreateGPUModal';
 import { Plus } from 'lucide-react';
 import { useGPUs } from '../hooks/useGPUs';
+import { useToast } from '../hooks/useToast';
 
 const ADMIN_WALLET = "B99ZeAHD4ZxGfSwbQRqbpQPpAigzwDCyx4ShHTcYCAtS";
 
@@ -21,8 +22,40 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
   walletAddress
 }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const { gpus, addGPU, loading } = useGPUs();
+  const [editingGPU, setEditingGPU] = useState<GPU | null>(null);
+  const { gpus, addGPU, deleteGPU, updateGPU, loading } = useGPUs();
+  const { showToast } = useToast();
   const isAdmin = walletAddress === ADMIN_WALLET;
+
+  const handleEdit = (gpu: GPU) => {
+    setEditingGPU(gpu);
+    setShowCreateModal(true);
+  };
+
+  const handleDelete = async (gpu: GPU) => {
+    if (window.confirm(`Are you sure you want to delete ${gpu.name}?`)) {
+      try {
+        await deleteGPU(gpu);
+        showToast('GPU deleted successfully', 'success');
+      } catch (error) {
+        showToast('Failed to delete GPU', 'error');
+      }
+    }
+  };
+
+  const handleSubmit = async (gpuData: Omit<GPU, 'id'>) => {
+    try {
+      if (editingGPU) {
+        await updateGPU(editingGPU.id, gpuData);
+        showToast('GPU updated successfully', 'success');
+      } else {
+        await addGPU(gpuData);
+        showToast('GPU created successfully', 'success');
+      }
+    } catch (error) {
+      showToast('Operation failed', 'error');
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto p-6">
@@ -59,6 +92,10 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
               onRent={onRent}
               disabled={!connected}
               userBalance={balance}
+              walletAddress={walletAddress}
+              isAdmin={isAdmin}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
             />
           ))}
         </div>
@@ -66,8 +103,14 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
 
       <CreateGPUModal
         isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        onSubmit={addGPU}
+        onClose={() => {
+          setShowCreateModal(false);
+          setEditingGPU(null);
+        }}
+        onSubmit={handleSubmit}
+        creatorAddress={walletAddress || ''}
+        initialData={editingGPU}
+        mode={editingGPU ? 'edit' : 'create'}
       />
     </div>
   );
