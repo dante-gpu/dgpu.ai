@@ -12,16 +12,16 @@ interface MarketplacePageProps {
 export const MarketplacePage: React.FC<MarketplacePageProps> = ({
   onRent,
   connected,
-  balance,
+  balance
 }) => {
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto p-6">
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-600">
+        <h1 className="text-3xl font-bold gradient-text">
           GPU Marketplace
-        </h2>
+        </h1>
         <p className="text-gray-400 mt-2">
-          Rent high-performance GPUs for your computational needs
+          Rent high-performance GPUs for your AI and machine learning workloads
         </p>
       </div>
 

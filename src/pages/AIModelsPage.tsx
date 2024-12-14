@@ -37,11 +37,11 @@ export const AIModelsPage: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-300">
+        <h1 className="text-3xl font-bold gradient-text">
           AI Models
         </h1>
         <p className="text-gray-400 mt-2">
-          Rent powerful AI models for your applications
+          Rent pre-trained AI models for your applications
         </p>
       </div>
 

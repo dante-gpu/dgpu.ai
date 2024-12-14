@@ -1,4 +1,8 @@
+export type MessageRole = 'user' | 'assistant';
+
 export interface ChatMessage {
-  type: 'user' | 'bot';
+  id: string;
+  role: MessageRole;
   content: string;
+  timestamp: Date;
 }
