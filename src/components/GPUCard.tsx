@@ -55,14 +55,14 @@ export const GPUCard: React.FC<GPUCardProps> = ({
 
   return (
     <>
-      <div className="bg-gray-900 rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-purple-600/20 hover:scale-[1.02] border border-gray-800">
+      <div className="bg-dark-800 rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-glow-500/20 hover:scale-[1.02] border border-dark-700">
         <div className="relative">
           <img
             src={gpu.imageUrl}
             alt={gpu.name}
             className="w-full h-48 object-cover"
           />
-          <div className="absolute top-2 right-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
+          <div className="absolute top-2 right-2 bg-gradient-to-r from-glow-400 to-glow-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
             {gpu.performance} Performance Score
           </div>
         </div>
@@ -73,11 +73,11 @@ export const GPUCard: React.FC<GPUCardProps> = ({
             <div className="space-y-2">
               <div className="flex justify-between text-gray-400">
                 <span>VRAM</span>
-                <span className="font-medium text-gray-300">{gpu.vram}GB</span>
+                <span className="font-medium text-glow-400">{gpu.vram}GB</span>
               </div>
-              <div className="flex justify-between text-purple-400">
+              <div className="flex justify-between text-glow-400">
                 <span>Price per hour</span>
-                <span className="font-semibold text-purple-300">{formatSOL(gpu.pricePerHour)} SOL</span>
+                <span className="font-semibold text-glow-300">{formatSOL(gpu.pricePerHour)} SOL</span>
               </div>
             </div>
           </div>
@@ -87,10 +87,10 @@ export const GPUCard: React.FC<GPUCardProps> = ({
             onChange={setHours}
           />
           
-          <div className="flex items-center justify-between pt-4 border-t border-gray-800">
+          <div className="flex items-center justify-between pt-4 border-t border-dark-700">
             <div>
               <span className="text-sm text-gray-400">Total Price</span>
-              <p className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-300">
+              <p className="text-lg font-bold gradient-text">
                 {formatSOL(totalPrice)} SOL
               </p>
             </div>
