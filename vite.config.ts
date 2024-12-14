@@ -3,17 +3,21 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  optimizeDeps: {
-    exclude: ['lucide-react'],
-  },
   resolve: {
     alias: {
-      'buffer': 'buffer',
-      'stream': 'stream-browserify',
+      stream: 'stream-browserify',
+      buffer: 'buffer',
     },
   },
   define: {
     'process.env': {},
-    'global': 'globalThis',
+    global: {},
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      define: {
+        global: 'globalThis',
+      },
+    },
   },
 });

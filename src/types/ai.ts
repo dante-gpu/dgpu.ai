@@ -1,11 +1,14 @@
+import { GPU } from './gpu';
+
 export interface AIModel {
   id: string;
   name: string;
   description: string;
-  performance: number;
-  pricePerHour: number;
-  vram: number;
   imageUrl: string;
-  features: string[];
+  performance: number;
+  vram: number;
+  pricePerHour: number;
   type: 'training' | 'inference';
+  features: string[];
+  gpu: GPU;
 }

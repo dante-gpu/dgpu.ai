@@ -19,9 +19,9 @@ export const RentalCard: React.FC<RentalCardProps> = ({ rental }) => {
             {formatDate(rental.timestamp)}
           </p>
           <span className={`text-sm ${
-            rental.status === 'completed' ? 'text-green-600' : 
-            rental.status === 'failed' ? 'text-red-600' : 
-            'text-yellow-600'
+            rental.status === 'active' ? 'text-yellow-600' :
+            rental.status === 'expired' ? 'text-red-600' :
+            'text-gray-600'
           }`}>
             {rental.status.charAt(0).toUpperCase() + rental.status.slice(1)}
           </span>

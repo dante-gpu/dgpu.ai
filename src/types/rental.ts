@@ -1,3 +1,5 @@
+import { GPU } from './gpu';
+
 export interface RentalTimer {
   endTime: Date;
   remainingTime: number; // in seconds

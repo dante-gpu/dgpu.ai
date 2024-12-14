@@ -25,9 +25,19 @@ export const GPUCard: React.FC<GPUCardProps> = ({
   const totalPrice = calculatePrice(gpu.pricePerHour, hours);
 
   const handleRent = async () => {
-    if (userBalance !== null && totalPrice > userBalance) {
+    if (!userBalance || totalPrice > userBalance) {
       alert('Insufficient balance!');
       return;
+    }
+
+    if (!window.solflare?.isConnected) {
+      try {
+        await window.solflare?.connect();
+      } catch (error) {
+        console.error('Failed to connect Solflare:', error);
+        alert('Please connect your Solflare wallet first!');
+        return;
+      }
     }
     
     setShowConfirmModal(true);

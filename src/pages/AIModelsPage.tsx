@@ -2,35 +2,46 @@ import React from 'react';
 import { AIModelCard } from '../components/ai/AIModelCard';
 import { aiModels } from '../data/aiModels';
 import { useWallet } from '../hooks/useWallet';
+import { useWalletBalance } from '../hooks/useWalletBalance';
+import { useRentals } from '../hooks/useRentals';
 import { useToast } from '../hooks/useToast';
-import { AIModel } from '../types/ai';
 
 export const AIModelsPage: React.FC = () => {
   const { connected, publicKey } = useWallet();
+  const { balance } = useWalletBalance(publicKey);
+  const { handleRent } = useRentals();
   const { showToast } = useToast();
 
-  const handleRent = async (model: AIModel, hours: number) => {
+  const onRent = async (modelId: string, hours: number) => {
     if (!publicKey) {
       showToast('Please connect your wallet first!', 'error');
       return;
     }
 
+    const model = aiModels.find(m => m.id === modelId);
+    if (!model) return;
+
     try {
-      // Implement rental logic here
-      showToast(`Successfully rented ${model.name} for ${hours} hours!`, 'success');
+      const result = await handleRent(model.gpu, hours, publicKey);
+      if (result.success) {
+        showToast(`Successfully rented ${model.name} for ${hours} hours!`, 'success');
+      } else {
+        showToast('Transaction failed. Please try again.', 'error');
+      }
     } catch (error) {
-      showToast('Failed to rent the model. Please try again.', 'error');
+      console.error('Rental transaction error:', error);
+      showToast('Transaction failed. Please try again.', 'error');
     }
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto p-6">
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-600">
+        <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-300">
           AI Models
-        </h2>
+        </h1>
         <p className="text-gray-400 mt-2">
-          Rent high-performance AI models for training and inference
+          Rent powerful AI models for your applications
         </p>
       </div>
 
@@ -39,8 +50,9 @@ export const AIModelsPage: React.FC = () => {
           <AIModelCard
             key={model.id}
             model={model}
-            onRent={handleRent}
+            onRent={(hours) => onRent(model.id, hours)}
             disabled={!connected}
+            userBalance={balance}
           />
         ))}
       </div>

@@ -1,108 +1,35 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { PublicKey } from '@solana/web3.js';
-import { WalletAdapter } from '../types/wallet';
 
 declare global {
   interface Window {
-    solflare: any;
+    solflare?: {
+      isConnected: boolean;
+      connect: () => Promise<{ publicKey: PublicKey }>;
+      disconnect: () => Promise<void>;
+      signAndSendTransaction: (transaction: any) => Promise<{ signature: string }>;
+      publicKey?: PublicKey;
+      on: (event: string, handler: () => void) => void;
+      off: (event: string, handler: () => void) => void;
+    };
   }
 }
 
 export const useWallet = () => {
-  const [wallet, setWallet] = useState<WalletAdapter | null>(null);
   const [connected, setConnected] = useState(false);
-  const [publicKey, setPublicKey] = useState<PublicKey | null>(null);
   const [connecting, setConnecting] = useState(false);
-
-  const initWallet = useCallback(async () => {
-    if (typeof window === 'undefined') return;
-
-    try {
-      const solflare = window.solflare;
-
-      if (solflare) {
-        if (!solflare.isReady) {
-          await new Promise<void>((resolve) => {
-            const listener = () => {
-              solflare.off('ready', listener);
-              resolve();
-            };
-            solflare.on('ready', listener);
-          });
-        }
-
-        const adapter: WalletAdapter = {
-          connected: solflare.connected,
-          publicKey: solflare.publicKey,
-          connect: async () => {
-            try {
-              await solflare.connect();
-            } catch (error) {
-              console.error('Connection error:', error);
-              throw error;
-            }
-          },
-          disconnect: async () => {
-            try {
-              await solflare.disconnect();
-            } catch (error) {
-              console.error('Disconnection error:', error);
-              throw error;
-            }
-          },
-          signAndSendTransaction: async (transaction) => {
-            return await solflare.signAndSendTransaction(transaction);
-          }
-        };
-
-        setWallet(adapter);
-
-        if (solflare.connected) {
-          setConnected(true);
-          setPublicKey(solflare.publicKey);
-        }
-      }
-    } catch (error) {
-      console.error('Error initializing wallet:', error);
-    }
-  }, []);
-
-  const connectWallet = async () => {
-    if (!window.solflare) {
-      window.open('https://solflare.com/download', '_blank');
-      return;
-    }
-
-    try {
-      setConnecting(true);
-      await window.solflare.connect();
-      setConnected(true);
-      setPublicKey(window.solflare.publicKey);
-    } catch (error) {
-      console.error('Error connecting wallet:', error);
-      throw error;
-    } finally {
-      setConnecting(false);
-    }
-  };
-
-  const disconnectWallet = async () => {
-    if (!window.solflare) return;
-
-    try {
-      await window.solflare.disconnect();
-      setConnected(false);
-      setPublicKey(null);
-    } catch (error) {
-      console.error('Error disconnecting wallet:', error);
-    }
-  };
+  const [publicKey, setPublicKey] = useState<PublicKey | null>(null);
 
   useEffect(() => {
-    initWallet();
+    const checkWalletConnection = async () => {
+      if (window.solflare?.isConnected) {
+        setConnected(true);
+        setPublicKey(window.solflare.publicKey || null);
+      }
+    };
 
     const handleConnect = () => {
-      if (window.solflare) {
+      if (window.solflare?.publicKey) {
         setConnected(true);
         setPublicKey(window.solflare.publicKey);
       }
@@ -115,20 +42,48 @@ export const useWallet = () => {
 
     window.solflare?.on('connect', handleConnect);
     window.solflare?.on('disconnect', handleDisconnect);
-    window.solflare?.on('accountChanged', handleConnect);
+    checkWalletConnection();
 
     return () => {
       window.solflare?.off('connect', handleConnect);
       window.solflare?.off('disconnect', handleDisconnect);
-      window.solflare?.off('accountChanged', handleConnect);
     };
-  }, [initWallet]);
+  }, []);
+
+  const connectWallet = async () => {
+    if (!window.solflare) {
+      window.open('https://solflare.com', '_blank');
+      return;
+    }
+
+    try {
+      setConnecting(true);
+      const response = await window.solflare.connect();
+      if (response?.publicKey) {
+        setPublicKey(new PublicKey(response.publicKey));
+        setConnected(true);
+      }
+    } catch (error) {
+      console.error('Solflare connection error:', error);
+    } finally {
+      setConnecting(false);
+    }
+  };
+
+  const disconnectWallet = async () => {
+    try {
+      await window.solflare?.disconnect();
+      setConnected(false);
+      setPublicKey(null);
+    } catch (error) {
+      console.error('Solflare disconnect error:', error);
+    }
+  };
 
   return {
-    wallet,
     connected,
-    publicKey,
     connecting,
+    publicKey,
     connectWallet,
     disconnectWallet
   };

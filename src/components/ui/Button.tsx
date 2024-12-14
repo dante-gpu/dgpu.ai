@@ -2,7 +2,7 @@ import React, { ButtonHTMLAttributes, ReactNode } from 'react';
 import { LoadingSpinner } from './LoadingSpinner';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
   icon?: ReactNode;
@@ -29,10 +29,9 @@ export const Button: React.FC<ButtonProps> = ({
   };
   
   const variantStyles = {
-    primary: 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 focus:ring-purple-500',
-    secondary: 'bg-gray-600 hover:bg-gray-700 text-white shadow-lg shadow-gray-500/20 hover:shadow-gray-500/30 focus:ring-gray-500',
-    outline: 'border border-gray-700 text-gray-300 hover:bg-gray-800 focus:ring-gray-700',
-    ghost: 'text-gray-400 hover:text-gray-300 hover:bg-gray-800 focus:ring-gray-700'
+    primary: 'bg-purple-600 hover:bg-purple-700 text-white',
+    secondary: 'bg-gray-700 hover:bg-gray-600 text-gray-200',
+    danger: 'bg-red-600 hover:bg-red-700 text-white'
   };
 
   const disabledStyles = 'opacity-50 cursor-not-allowed pointer-events-none';

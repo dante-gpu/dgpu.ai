@@ -71,7 +71,7 @@ function App() {
       onConnect={connectWallet}
       onDisconnect={disconnectWallet}
       currentView={currentView}
-      onChangeView={setCurrentView}
+      onChangeView={(view: View) => setCurrentView(view)}
       toasts={toasts}
       onRemoveToast={removeToast}
     >

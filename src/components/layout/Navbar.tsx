@@ -1,7 +1,7 @@
 import React from 'react';
 import { WalletButton } from '../wallet/WalletButton';
 import { NavButton } from '../ui/NavButton';
-import { LayoutGridIcon, LayoutDashboardIcon, MessageCircleIcon } from 'lucide-react';
+import { Store, Brain, LayoutDashboard, MessageSquare } from 'lucide-react';
 
 interface NavbarProps {
   connected: boolean;
@@ -13,6 +13,13 @@ interface NavbarProps {
   onChangeView: (view: 'marketplace' | 'dashboard' | 'chat') => void;
 }
 
+const navItems = [
+  { id: 'marketplace', label: 'Marketplace', icon: Store },
+  { id: 'ai-models', label: 'AI Models', icon: Brain },
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'chat', label: 'Chat', icon: MessageSquare }
+] as const;
+
 export const Navbar: React.FC<NavbarProps> = ({
   connected,
   connecting,
@@ -23,34 +30,23 @@ export const Navbar: React.FC<NavbarProps> = ({
   onChangeView,
 }) => {
   return (
-    <nav className="bg-gray-900 border-b border-gray-800">
+    <nav className="bg-dark-900 border-b border-dark-700">
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-8">
-            <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-600">
+            <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-glow-400 to-glow-600">
               Dgpu.fun
             </h1>
             <div className="flex items-center gap-2">
-              <NavButton
-                onClick={() => onChangeView('marketplace')}
-                label="Marketplace"
-                icon={<LayoutGridIcon size={20} />}
-                active={currentView === 'marketplace'}
-              />
-              {connected && (
+              {navItems.map(item => (
                 <NavButton
-                  onClick={() => onChangeView('dashboard')}
-                  label="Dashboard"
-                  icon={<LayoutDashboardIcon size={20} />}
-                  active={currentView === 'dashboard'}
+                  key={item.id}
+                  onClick={() => onChangeView(item.id as 'marketplace' | 'dashboard' | 'chat')}
+                  label={item.label}
+                  icon={item.icon}
+                  active={currentView === item.id}
                 />
-              )}
-              <NavButton
-                onClick={() => onChangeView('chat')}
-                label="Chat"
-                icon={<MessageCircleIcon size={20} />}
-                active={currentView === 'chat'}
-              />
+              ))}
             </div>
           </div>
           

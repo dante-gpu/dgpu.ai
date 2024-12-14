@@ -1,21 +1,23 @@
 import React, { useState } from 'react';
 import { AIModel } from '../../types/ai';
 import { Button } from '../ui/Button';
-import { Brain, Cpu, Memory } from 'lucide-react';
+import { Brain, Cpu, Database } from 'lucide-react';
 import { formatSOL } from '../../utils/format';
 import { DurationPicker } from '../rental/DurationPicker';
 import { RentalConfirmModal } from '../rental/RentalConfirmModal';
 
 interface AIModelCardProps {
   model: AIModel;
-  onRent: (model: AIModel, hours: number) => Promise<void>;
+  onRent: (hours: number) => Promise<void>;
   disabled?: boolean;
+  userBalance?: number | null;
 }
 
 export const AIModelCard: React.FC<AIModelCardProps> = ({
   model,
   onRent,
-  disabled
+  disabled,
+  userBalance
 }) => {
   const [hours, setHours] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,7 +31,7 @@ export const AIModelCard: React.FC<AIModelCardProps> = ({
     setShowConfirmModal(false);
     setIsLoading(true);
     try {
-      await onRent(model, hours);
+      await onRent(hours);
     } finally {
       setIsLoading(false);
     }
@@ -60,7 +62,7 @@ export const AIModelCard: React.FC<AIModelCardProps> = ({
                 <span className="text-sm">{model.performance}% Perf</span>
               </div>
               <div className="flex items-center gap-2 text-gray-400">
-                <Memory size={16} />
+                <Database size={16} />
                 <span className="text-sm">{model.vram}GB VRAM</span>
               </div>
               <div className="flex items-center gap-2 text-gray-400">

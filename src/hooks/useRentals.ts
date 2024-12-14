@@ -1,39 +1,58 @@
-import { useState, useCallback } from 'react';
-import { PublicKey } from '@solana/web3.js';
+import { useState } from 'react';
 import { GPU } from '../types/gpu';
-import { createPaymentTransaction, connection } from '../utils/solana';
+import { PublicKey } from '@solana/web3.js';
+import { createPaymentTransaction } from '../utils/solana';
 import { RentalHistory } from '../types/rental';
 
 export const useRentals = () => {
   const [rentals, setRentals] = useState<RentalHistory[]>([]);
 
-  const handleRent = async (gpu: GPU, hours: number, publicKey: PublicKey) => {
+  const handleRent = async (gpu: GPU, hours: number, userPublicKey: PublicKey) => {
     try {
-      const price = gpu.pricePerHour * hours;
-      const transaction = await createPaymentTransaction(publicKey, price);
+      if (!window.solflare) {
+        throw new Error('Solflare not found');
+      }
 
-      // @ts-ignore
-      const { signature } = await window.solana.signAndSendTransaction(transaction);
-      await connection.confirmTransaction(signature);
+      if (!window.solflare.isConnected) {
+        await window.solflare.connect();
+      }
 
-      const newRental: RentalHistory = {
-        id: signature,
-        gpu,
-        hours,
-        price,
-        timestamp: new Date(),
-        status: 'active'
-      };
+      // Transaction'ı oluştur
+      const transaction = await createPaymentTransaction(
+        userPublicKey,
+        gpu.pricePerHour * hours
+      );
 
-      setRentals(prev => [...prev, newRental]);
-      return { success: true, rental: newRental };
+      // İmza için cüzdana gönder
+      const signature = await window.solflare.signAndSendTransaction(transaction);
+
+      if (signature) {
+        // Başarılı işlem
+        const newRental: RentalHistory = {
+          id: signature.signature,
+          gpu,
+          hours,
+          price: gpu.pricePerHour * hours,
+          timestamp: new Date(),
+          status: 'active',
+          timer: {
+            endTime: new Date(Date.now() + hours * 60 * 60 * 1000),
+            remainingTime: hours * 60 * 60
+          }
+        };
+
+        setRentals(prev => [...prev, newRental]);
+        return { success: true, signature };
+      }
+
+      return { success: false };
     } catch (error) {
       console.error('Rental transaction error:', error);
-      return { success: false, error };
+      throw error;
     }
   };
 
-  const handleExpire = useCallback((rentalId: string) => {
+  const handleExpire = (rentalId: string) => {
     setRentals(prev =>
       prev.map(rental =>
         rental.id === rentalId
@@ -41,21 +60,16 @@ export const useRentals = () => {
           : rental
       )
     );
-  }, []);
+  };
 
-  const getActiveRentals = useCallback(() => {
-    return rentals.filter(rental => rental.status === 'active');
-  }, [rentals]);
-
-  const getTotalSpent = useCallback(() => {
-    return rentals.reduce((sum, rental) => sum + rental.price, 0);
-  }, [rentals]);
+  const getTotalSpent = () => {
+    return rentals.reduce((total, rental) => total + rental.price, 0);
+  };
 
   return {
     rentals,
     handleRent,
     handleExpire,
-    getActiveRentals,
-    getTotalSpent
+    getTotalSpent,
   };
 };

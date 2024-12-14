@@ -1,37 +1,41 @@
 import { AIModel } from '../types/ai';
+import { gpus } from './gpus';
 
 export const aiModels: AIModel[] = [
   {
-    id: 'gpt-4',
-    name: 'GPT-4 Training',
-    description: 'High-performance model for large language model training and fine-tuning',
-    performance: 100,
-    pricePerHour: 0.08,
-    vram: 48,
-    imageUrl: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=2940',
-    features: ['Multi-modal Training', 'Distributed Learning', 'Custom Architecture'],
-    type: 'training'
-  },
-  {
-    id: 'stable-xl',
-    name: 'Stable Diffusion XL',
-    description: 'Advanced image generation and training infrastructure',
-    performance: 90,
-    pricePerHour: 0.06,
+    id: '1',
+    name: 'StableDiffusion XL',
+    description: 'High-performance image generation model with exceptional quality',
+    imageUrl: '/ai-models/sdxl.jpg',
+    performance: 95,
     vram: 24,
-    imageUrl: 'https://images.unsplash.com/photo-1686191128892-3e67c5f30820?auto=format&fit=crop&q=80&w=2940',
-    features: ['LoRA Training', 'Custom Dataset Support', 'Hyperparameter Optimization'],
-    type: 'training'
+    pricePerHour: 0.5,
+    type: 'inference',
+    features: ['Image Generation', '4K Resolution', 'Fast Inference', 'LoRA Support'],
+    gpu: gpus[0]
   },
   {
-    id: 'llama-2',
-    name: 'Llama 2 70B',
-    description: 'Open-source large language model training and inference',
+    id: '2',
+    name: 'LLaMA 2 70B',
+    description: 'Large language model for text generation and chat applications',
+    imageUrl: '/ai-models/llama2.jpg',
+    performance: 90,
+    vram: 80,
+    pricePerHour: 0.8,
+    type: 'inference',
+    features: ['Text Generation', 'Chat', 'Code Generation', 'Multi-lingual'],
+    gpu: gpus[1]
+  },
+  {
+    id: '3',
+    name: 'YOLOv8',
+    description: 'Real-time object detection and image segmentation model',
+    imageUrl: '/ai-models/yolo.jpg',
     performance: 85,
-    pricePerHour: 0.05,
-    vram: 32,
-    imageUrl: 'https://images.unsplash.com/photo-1693520999631-6ac145c1dd15?auto=format&fit=crop&q=80&w=2940',
-    features: ['Parameter-Efficient Training', 'Multi-node Support', 'Quantization'],
-    type: 'inference'
+    vram: 16,
+    pricePerHour: 0.3,
+    type: 'inference',
+    features: ['Object Detection', 'Segmentation', 'Real-time', 'Pre-trained'],
+    gpu: gpus[2]
   }
 ];

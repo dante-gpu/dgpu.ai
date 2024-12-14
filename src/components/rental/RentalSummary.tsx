@@ -8,10 +8,10 @@ interface RentalSummaryProps {
 
 export const RentalSummary: React.FC<RentalSummaryProps> = ({ rental }) => {
   const statusColors = {
-    completed: 'text-green-600',
-    pending: 'text-yellow-600',
-    failed: 'text-red-600'
-  };
+    active: 'text-yellow-600',
+    expired: 'text-red-600',
+    completed: 'text-green-600'
+  } as const;
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">

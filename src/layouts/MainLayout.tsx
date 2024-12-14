@@ -3,6 +3,8 @@ import { Navbar } from '../components/layout/Navbar';
 import { Toast } from '../components/ui/Toast';
 import { ToastData } from '../types/toast';
 
+type View = 'marketplace' | 'dashboard' | 'chat' | 'ai-models';
+
 interface MainLayoutProps {
   children: React.ReactNode;
   connected: boolean;
@@ -10,8 +12,8 @@ interface MainLayoutProps {
   walletAddress?: string;
   onConnect: () => void;
   onDisconnect: () => void;
-  currentView: string;
-  onChangeView: (view: string) => void;
+  currentView: View;
+  onChangeView: (view: View) => void;
   toasts: ToastData[];
   onRemoveToast: (id: number) => void;
 }
@@ -29,7 +31,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   onRemoveToast,
 }) => {
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-dark-900 text-white">
       <Navbar
         connected={connected}
         connecting={connecting}
@@ -40,7 +42,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         onChangeView={onChangeView as any}
       />
 
-      <main>{children}</main>
+      <main className="bg-gradient-radial from-dark-800 to-dark-900">
+        {children}
+      </main>
 
       {toasts.map(toast => (
         <Toast
