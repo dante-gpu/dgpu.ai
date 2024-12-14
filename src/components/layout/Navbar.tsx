@@ -1,7 +1,7 @@
 import React from 'react';
 import { WalletButton } from '../wallet/WalletButton';
 import { NavButton } from '../ui/NavButton';
-import { Store, Brain, LayoutDashboard, MessageSquare, User } from 'lucide-react';
+import { Store, Brain, LayoutDashboard, MessageSquare, User, Home } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { GlobalSearch } from '../search/GlobalSearch';
 import { AccountSearchBar } from '../search/AccountSearchBar';
@@ -44,15 +44,18 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <nav className="bg-dark-900 border-b border-dark-700">
-      <div className="max-w-7xl mx-auto px-4 py-4">
-        <div className="flex items-center gap-8">
-          <h1 className="text-2xl font-bold gradient-text">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-black/50 backdrop-blur-xl border-b border-white/10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          <div
+            onClick={() => navigate('/')}
+            className="text-2xl font-bold gradient-text cursor-pointer hover:opacity-80 transition-opacity mr-8"
+          >
             Dgpu.fun
-          </h1>
+          </div>
           
           <div className="flex items-center gap-4 flex-1">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center space-x-4">
               {navItems.map(item => (
                 <NavButton
                   key={item.id}
@@ -67,16 +70,20 @@ export const Navbar: React.FC<NavbarProps> = ({
               ))}
             </div>
 
-            <AccountSearchBar />
+            <div className="ml-8">
+              <AccountSearchBar />
+            </div>
           </div>
           
-          <WalletButton
-            onConnect={onConnect}
-            onDisconnect={onDisconnect}
-            connected={connected}
-            connecting={connecting}
-            walletAddress={walletAddress}
-          />
+          <div className="ml-4">
+            <WalletButton
+              onConnect={onConnect}
+              onDisconnect={onDisconnect}
+              connected={connected}
+              connecting={connecting}
+              walletAddress={walletAddress}
+            />
+          </div>
         </div>
       </div>
     </nav>

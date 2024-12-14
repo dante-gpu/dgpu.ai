@@ -31,29 +31,31 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   onRemoveToast,
 }) => {
   return (
-    <div className="min-h-screen bg-dark-900 text-white">
-      <Navbar
-        connected={connected}
-        connecting={connecting}
-        walletAddress={walletAddress}
-        onConnect={onConnect}
-        onDisconnect={onDisconnect}
-        currentView={currentView as any}
-        onChangeView={onChangeView as any}
-      />
-
-      <main className="bg-gradient-radial from-dark-800 to-dark-900">
-        {children}
-      </main>
-
-      {toasts.map(toast => (
-        <Toast
-          key={toast.id}
-          message={toast.message}
-          type={toast.type}
-          onClose={() => onRemoveToast(toast.id)}
+    <div className="min-h-screen bg-dark-900">
+      <div className="pt-20">
+        <Navbar
+          connected={connected}
+          connecting={connecting}
+          walletAddress={walletAddress}
+          onConnect={onConnect}
+          onDisconnect={onDisconnect}
+          currentView={currentView as any}
+          onChangeView={onChangeView as any}
         />
-      ))}
+
+        <main className="bg-gradient-radial from-dark-800 to-dark-900">
+          {children}
+        </main>
+
+        {toasts.map(toast => (
+          <Toast
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => onRemoveToast(toast.id)}
+          />
+        ))}
+      </div>
     </div>
   );
 };
