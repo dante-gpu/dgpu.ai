@@ -4,6 +4,7 @@ import { NavButton } from '../ui/NavButton';
 import { Store, Brain, LayoutDashboard, MessageSquare, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { GlobalSearch } from '../search/GlobalSearch';
+import { AccountSearchBar } from '../search/AccountSearchBar';
 
 const ADMIN_WALLET = "B99ZeAHD4ZxGfSwbQRqbpQPpAigzwDCyx4ShHTcYCAtS";
 
@@ -45,11 +46,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <nav className="bg-dark-900 border-b border-dark-700">
       <div className="max-w-7xl mx-auto px-4 py-4">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-8">
-            <h1 className="text-2xl font-bold gradient-text">
-              Dgpu.fun
-            </h1>
+        <div className="flex items-center gap-8">
+          <h1 className="text-2xl font-bold gradient-text">
+            Dgpu.fun
+          </h1>
+          
+          <div className="flex items-center gap-4 flex-1">
             <div className="flex items-center gap-2">
               {navItems.map(item => (
                 <NavButton
@@ -64,19 +66,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                 />
               ))}
             </div>
+
+            <AccountSearchBar />
           </div>
           
-          <div className="flex items-center gap-4">
-            <GlobalSearch />
-            
-            <WalletButton
-              onConnect={onConnect}
-              onDisconnect={onDisconnect}
-              connected={connected}
-              connecting={connecting}
-              walletAddress={walletAddress}
-            />
-          </div>
+          <WalletButton
+            onConnect={onConnect}
+            onDisconnect={onDisconnect}
+            connected={connected}
+            connecting={connecting}
+            walletAddress={walletAddress}
+          />
         </div>
       </div>
     </nav>

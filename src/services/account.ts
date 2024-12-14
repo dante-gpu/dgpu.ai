@@ -11,10 +11,9 @@ export interface AccountStats {
   reputation: number;
 }
 
-export const accountService = {
-  // Yeni hesap oluştur veya var olanı getir
-  initializeAccount: async (address: string): Promise<UserProfile> => {
-    const accounts = await accountService.getAllAccounts();
+class AccountService {
+  async initializeAccount(address: string): Promise<UserProfile> {
+    const accounts = await this.getAllAccounts();
     const existingAccount = accounts.find(a => a.address === address);
 
     if (existingAccount) {
@@ -42,13 +41,12 @@ export const accountService = {
       activity: []
     };
 
-    await accountService.saveAccount(newAccount);
+    await this.saveAccount(newAccount);
     return newAccount;
-  },
+  }
 
-  // Hesabı güncelle
-  updateAccount: async (address: string, updates: Partial<UserProfile>): Promise<UserProfile> => {
-    const accounts = await accountService.getAllAccounts();
+  async updateAccount(address: string, updates: Partial<UserProfile>): Promise<UserProfile> {
+    const accounts = await this.getAllAccounts();
     const index = accounts.findIndex(a => a.address === address);
     
     if (index === -1) {
@@ -60,28 +58,25 @@ export const accountService = {
     
     localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
     return updatedAccount;
-  },
+  }
 
-  // Hesap ara
-  searchAccounts: async (query: string): Promise<UserProfile[]> => {
-    const accounts = await accountService.getAllAccounts();
+  async searchAccounts(query: string): Promise<UserProfile[]> {
+    const accounts = await this.getAllAccounts();
     const lowerQuery = query.toLowerCase();
 
     return accounts.filter(account => 
       account.address.toLowerCase().includes(lowerQuery) ||
       account.username?.toLowerCase().includes(lowerQuery)
     );
-  },
+  }
 
-  // Tüm hesapları getir
-  getAllAccounts: async (): Promise<UserProfile[]> => {
+  async getAllAccounts(): Promise<UserProfile[]> {
     const stored = localStorage.getItem(ACCOUNTS_KEY);
     return stored ? JSON.parse(stored) : [];
-  },
+  }
 
-  // Hesabı kaydet
-  saveAccount: async (account: UserProfile): Promise<void> => {
-    const accounts = await accountService.getAllAccounts();
+  async saveAccount(account: UserProfile): Promise<void> {
+    const accounts = await this.getAllAccounts();
     const index = accounts.findIndex(a => a.address === account.address);
 
     if (index !== -1) {
@@ -91,11 +86,10 @@ export const accountService = {
     }
 
     localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
-  },
+  }
 
-  // Hesap istatistiklerini getir
-  getAccountStats: async (address: string): Promise<AccountStats> => {
-    const account = (await accountService.getAllAccounts())
+  async getAccountStats(address: string): Promise<AccountStats> {
+    const account = (await this.getAllAccounts())
       .find(a => a.address === address);
 
     if (!account) {
@@ -110,4 +104,6 @@ export const accountService = {
       reputation: account.reputation.score
     };
   }
-};
+}
+
+export const accountService = new AccountService();
