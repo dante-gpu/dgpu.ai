@@ -1,8 +1,12 @@
 export interface GPU {
   id: string;
   name: string;
-  vram: number;
-  performance: number;
-  pricePerHour: number; // in SOL
+  description: string;
   imageUrl: string;
+  performance: number;
+  vram: number;
+  pricePerHour: number;
+  manufacturer: string;
+  model: string;
+  createdAt?: string;
 }

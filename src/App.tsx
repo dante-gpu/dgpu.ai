@@ -43,7 +43,7 @@ function App() {
     <MainLayout
       connected={connected}
       connecting={connecting}
-      walletAddress={publicKey?.toString()}
+      walletAddress={publicKey?.toBase58()}
       onConnect={connectWallet}
       onDisconnect={disconnectWallet}
       currentView={currentView}
@@ -57,6 +57,7 @@ function App() {
             onRent={onRent}
             connected={connected}
             balance={balance}
+            walletAddress={publicKey?.toBase58()}
           />
         } />
         <Route path="/dashboard" element={
