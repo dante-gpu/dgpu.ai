@@ -12,6 +12,7 @@ import { useWalletBalance } from './hooks/useWalletBalance';
 import { GPU } from './types/gpu';
 import { ProfilePage } from './pages/ProfilePage';
 import { accountService } from './services/account';
+import { ParticleBackground } from './components/ui/ParticleBackground';
 
 type View = 'marketplace' | 'dashboard' | 'chat' | 'ai-models';
 
@@ -48,39 +49,42 @@ function App() {
   };
 
   return (
-    <MainLayout
-      connected={connected}
-      connecting={connecting}
-      walletAddress={publicKey?.toBase58()}
-      onConnect={connectWallet}
-      onDisconnect={disconnectWallet}
-      currentView={currentView}
-      onChangeView={(view: View) => setCurrentView(view)}
-      toasts={toasts}
-      onRemoveToast={removeToast}
-    >
-      <Routes>
-        <Route path="/" element={
-          <MarketplacePage
-            onRent={onRent}
-            connected={connected}
-            balance={balance}
-            walletAddress={publicKey?.toBase58()}
-          />
-        } />
-        <Route path="/dashboard" element={
-          <Dashboard 
-            rentals={rentals} 
-            totalSpent={getTotalSpent()}
-            onExpire={handleExpire}
-          />
-        } />
-        <Route path="/chat" element={<ChatPage />} />
-        <Route path="/ai-models" element={<AIModelsPage />} />
-        <Route path="/profile/:address" element={<ProfilePage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </MainLayout>
+    <>
+      <MainLayout
+        connected={connected}
+        connecting={connecting}
+        walletAddress={publicKey?.toBase58()}
+        onConnect={connectWallet}
+        onDisconnect={disconnectWallet}
+        currentView={currentView}
+        onChangeView={(view: View) => setCurrentView(view)}
+        toasts={toasts}
+        onRemoveToast={removeToast}
+      >
+        <Routes>
+          <Route path="/" element={
+            <MarketplacePage
+              onRent={onRent}
+              connected={connected}
+              balance={balance}
+              walletAddress={publicKey?.toBase58()}
+            />
+          } />
+          <Route path="/dashboard" element={
+            <Dashboard 
+              rentals={rentals} 
+              totalSpent={getTotalSpent()}
+              onExpire={handleExpire}
+            />
+          } />
+          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/ai-models" element={<AIModelsPage />} />
+          <Route path="/profile/:address" element={<ProfilePage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </MainLayout>
+      <ParticleBackground />
+    </>
   );
 }
 
