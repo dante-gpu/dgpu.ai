@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { MainLayout } from './layouts/MainLayout';
 import { MarketplacePage } from './pages/MarketplacePage';
@@ -11,6 +11,7 @@ import { useToast } from './hooks/useToast';
 import { useWalletBalance } from './hooks/useWalletBalance';
 import { GPU } from './types/gpu';
 import { ProfilePage } from './pages/ProfilePage';
+import { accountService } from './services/account';
 
 type View = 'marketplace' | 'dashboard' | 'chat' | 'ai-models';
 
@@ -20,6 +21,12 @@ function App() {
   const { rentals, handleRent, getTotalSpent, handleExpire } = useRentals();
   const { toasts, showToast, removeToast } = useToast();
   const [currentView, setCurrentView] = useState<View>('marketplace');
+
+  useEffect(() => {
+    if (connected && publicKey) {
+      accountService.initializeAccount(publicKey.toBase58());
+    }
+  }, [connected, publicKey]);
 
   const onRent = async (gpu: GPU, hours: number) => {
     if (!publicKey) {
