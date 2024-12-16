@@ -113,12 +113,15 @@ export const AIModelCard: React.FC<AIModelCardProps> = ({
       </div>
 
       <RentalConfirmModal
-        gpu={model.gpu}
-        hours={hours}
-        totalPrice={totalPrice}
-        onConfirm={confirmRental}
-        onCancel={() => setShowConfirmModal(false)}
         isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={confirmRental}
+        gpuDetails={{
+          name: model.name,
+          price: model.pricePerHour,
+          duration: hours
+        }}
+        isProcessing={isLoading}
       />
     </>
   );
