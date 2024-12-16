@@ -2,51 +2,39 @@ import React from 'react';
 import { Navbar } from '../components/layout/Navbar';
 import { Toast } from '../components/ui/Toast';
 import { ToastData } from '../types/toast';
-
-type View = 'marketplace' | 'dashboard' | 'chat' | 'ai-models';
+import { useWalletContext } from '../contexts/WalletContext';
 
 interface MainLayoutProps {
   children: React.ReactNode;
-  connected: boolean;
-  connecting: boolean;
-  walletAddress?: string;
-  onConnect: () => void;
-  onDisconnect: () => void;
-  currentView: View;
-  onChangeView: (view: View) => void;
+  currentView: string;
+  onChangeView: (view: string) => void;
   toasts: ToastData[];
   onRemoveToast: (id: number) => void;
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({
   children,
-  connected,
-  connecting,
-  walletAddress,
-  onConnect,
-  onDisconnect,
   currentView,
   onChangeView,
   toasts,
-  onRemoveToast,
+  onRemoveToast
 }) => {
+  const { connected, walletAddress, onConnect, onDisconnect } = useWalletContext();
+
   return (
     <div className="min-h-screen bg-dark-900">
-      <div className="pt-20">
-        <Navbar
-          connected={connected}
-          connecting={connecting}
-          walletAddress={walletAddress}
-          onConnect={onConnect}
-          onDisconnect={onDisconnect}
-          currentView={currentView as any}
-          onChangeView={onChangeView as any}
-        />
-
-        <main className="bg-gradient-radial from-dark-800 to-dark-900">
-          {children}
-        </main>
-
+      <Navbar
+        connected={connected}
+        walletAddress={walletAddress}
+        onConnect={onConnect}
+        onDisconnect={onDisconnect}
+        currentView={currentView}
+        onChangeView={onChangeView}
+      />
+      <main className="pt-16">
+        {children}
+      </main>
+      <div className="fixed bottom-4 right-4 z-50">
         {toasts.map(toast => (
           <Toast
             key={toast.id}

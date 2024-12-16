@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { MainLayout } from './layouts/MainLayout';
+import { WalletProvider } from './contexts/WalletContext';
 import { MarketplacePage } from './pages/MarketplacePage';
 import { Dashboard } from './pages/Dashboard';
 import { ChatPage } from './pages/ChatPage';
 import { AIModelsPage } from './pages/AIModelsPage';
-import { useWallet } from './hooks/useWallet';
 import { useRentals } from './hooks/useRentals';
 import { useToast } from './hooks/useToast';
 import { useWalletBalance } from './hooks/useWalletBalance';
@@ -18,26 +18,14 @@ import { SettingsPage } from './pages/SettingsPage';
 type View = 'marketplace' | 'dashboard' | 'chat' | 'ai-models' | 'settings';
 
 function App() {
-  const { connected, publicKey, connectWallet, disconnectWallet, connecting } = useWallet();
-  const { balance } = useWalletBalance(publicKey);
+  const { balance } = useWalletBalance();
   const { rentals, handleRent, getTotalSpent, handleExpire } = useRentals();
   const { toasts, showToast, removeToast } = useToast();
   const [currentView, setCurrentView] = useState<View>('marketplace');
 
-  useEffect(() => {
-    if (connected && publicKey) {
-      accountService.initializeAccount(publicKey.toBase58());
-    }
-  }, [connected, publicKey]);
-
   const onRent = async (gpu: GPU, hours: number) => {
-    if (!publicKey) {
-      showToast('Please connect your wallet first!', 'error');
-      return;
-    }
-
     try {
-      const result = await handleRent(gpu, hours, publicKey);
+      const result = await handleRent(gpu, hours);
       if (result.success) {
         showToast(`Successfully rented ${gpu.name} for ${hours} hours!`, 'success');
       } else {
@@ -50,13 +38,8 @@ function App() {
   };
 
   return (
-    <>
+    <WalletProvider>
       <MainLayout
-        connected={connected}
-        connecting={connecting}
-        walletAddress={publicKey?.toBase58()}
-        onConnect={connectWallet}
-        onDisconnect={disconnectWallet}
         currentView={currentView}
         onChangeView={(view: View) => setCurrentView(view)}
         toasts={toasts}
@@ -66,9 +49,7 @@ function App() {
           <Route path="/" element={
             <MarketplacePage
               onRent={onRent}
-              connected={connected}
               balance={balance}
-              walletAddress={publicKey?.toBase58()}
             />
           } />
           <Route path="/dashboard" element={
@@ -86,7 +67,7 @@ function App() {
         </Routes>
       </MainLayout>
       <ParticleBackground />
-    </>
+    </WalletProvider>
   );
 }
 

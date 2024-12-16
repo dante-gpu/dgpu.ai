@@ -1,126 +1,111 @@
-import { useState, useCallback, useEffect } from 'react';
-import { ChatMessage, ChatSession, MessageStatus } from '../types/chat';
-import { v4 as uuidv4 } from 'uuid';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { ChatMessage } from '../types/chat';
+import { chatService } from '../services/chat';
+import { useToast } from './useToast';
+
+const MAX_MESSAGES = 50; // Maksimum mesaj sayısı
 
 export const useChat = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [sessions, setSessions] = useState<ChatSession[]>([]);
-  const [currentSession, setCurrentSession] = useState<ChatSession | undefined>();
   const [isLoading, setIsLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { showToast } = useToast();
 
-  // Load sessions from localStorage
+  // Otomatik kaydırma
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
+
   useEffect(() => {
-    try {
-      const savedSessions = localStorage.getItem('chat-sessions');
-      if (savedSessions) {
-        const parsed = JSON.parse(savedSessions);
-        setSessions(parsed.map((s: any) => ({
-          ...s,
-          timestamp: new Date(s.timestamp)
-        })));
+    scrollToBottom();
+  }, [messages, scrollToBottom]);
+
+  // Mesaj geçmişini localStorage'a kaydet
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem('chatHistory', JSON.stringify(messages.slice(-MAX_MESSAGES)));
+    }
+  }, [messages]);
+
+  // Sayfa yüklendiğinde mesaj geçmişini yükle
+  useEffect(() => {
+    const savedMessages = localStorage.getItem('chatHistory');
+    if (savedMessages) {
+      try {
+        setMessages(JSON.parse(savedMessages));
+      } catch (error) {
+        console.error('Failed to load chat history:', error);
       }
-    } catch (error) {
-      console.error('Error loading sessions:', error);
     }
   }, []);
-
-  // Save sessions to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem('chat-sessions', JSON.stringify(sessions));
-    } catch (error) {
-      console.error('Error saving sessions:', error);
-    }
-  }, [sessions]);
-
-  const createNewSession = useCallback(() => {
-    const newSession: ChatSession = {
-      id: uuidv4(),
-      title: 'New Chat',
-      timestamp: new Date(),
-    };
-    setSessions(prev => [newSession, ...prev]);
-    setCurrentSession(newSession);
-    setMessages([{
-      id: uuidv4(),
-      role: 'assistant',
-      content: "Hello! I'm your AI assistant. How can I help you today?",
-      timestamp: new Date(),
-      status: 'sent'
-    }]);
-  }, []);
-
-  const selectSession = useCallback((sessionId: string) => {
-    const session = sessions.find(s => s.id === sessionId);
-    if (session) {
-      setCurrentSession(session);
-      // TODO: Load messages for this session
-      setMessages([]);
-    }
-  }, [sessions]);
 
   const handleUserMessage = useCallback(async (content: string) => {
     if (!content.trim()) return;
 
     const userMessage: ChatMessage = {
-      id: uuidv4(),
+      id: crypto.randomUUID(),
       role: 'user',
       content,
       timestamp: new Date(),
-      status: 'sending' as MessageStatus
+      status: 'sending',
+      animated: true
     };
 
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
+    setIsTyping(true);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      const assistantMessage: ChatMessage = {
-        id: uuidv4(),
-        role: 'assistant',
-        content: `I understand your message: "${content}"\n\nHow can I assist you further?`,
-        timestamp: new Date(),
-        status: 'sent' as MessageStatus
-      };
-
+      // Yapay yazma gecikmesi
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const assistantMessage = await chatService.sendMessage(content);
+      
       setMessages(prev => [
-        ...prev.map(m => m.id === userMessage.id ? { ...m, status: 'sent' as MessageStatus } : m),
-        assistantMessage
+        ...prev.map(m => m.id === userMessage.id ? { ...m, status: 'sent' } : m),
+        { ...assistantMessage, animated: true }
       ]);
-
-      if (currentSession) {
-        const updatedSession = {
-          ...currentSession,
-          lastMessage: content,
-          timestamp: new Date(),
-        };
-        setSessions(prev => 
-          prev.map(s => s.id === currentSession.id ? updatedSession : s)
-        );
-        setCurrentSession(updatedSession);
-      }
     } catch (error) {
       console.error('Chat error:', error);
+      showToast('Mesaj gönderilemedi. Lütfen tekrar deneyin.', 'error');
+      
       setMessages(prev => 
         prev.map(m => m.id === userMessage.id ? { 
           ...m, 
-          status: 'error' as MessageStatus, 
-          error: 'Failed to send message' 
+          status: 'error', 
+          error: 'Mesaj gönderilemedi' 
         } : m)
       );
     } finally {
       setIsLoading(false);
+      setIsTyping(false);
     }
-  }, [currentSession]);
+  }, [showToast]);
+
+  const clearHistory = useCallback(() => {
+    setMessages([]);
+    localStorage.removeItem('chatHistory');
+    showToast('Sohbet geçmişi temizlendi', 'success');
+  }, [showToast]);
+
+  const retryMessage = useCallback(async (messageId: string) => {
+    const messageToRetry = messages.find(m => m.id === messageId);
+    if (!messageToRetry) return;
+
+    setMessages(prev => 
+      prev.map(m => m.id === messageId ? { ...m, status: 'sending' } : m)
+    );
+
+    await handleUserMessage(messageToRetry.content);
+  }, [messages, handleUserMessage]);
 
   return {
     messages,
     isLoading,
+    isTyping,
     handleUserMessage,
-    sessions,
-    currentSession,
-    createNewSession,
-    selectSession,
+    clearHistory,
+    retryMessage,
+    messagesEndRef
   };
 };

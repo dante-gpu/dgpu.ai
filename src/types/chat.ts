@@ -7,7 +7,6 @@ export interface ChatMessage {
   content: string;
   timestamp: Date;
   status?: MessageStatus;
-  isTyping?: boolean;
   error?: string;
 }
 
@@ -16,4 +15,9 @@ export interface ChatSession {
   title: string;
   lastMessage?: string;
   timestamp: Date;
+}
+
+export interface ChatResponse {
+  response: string;
+  timestamp: string;
 }
