@@ -6,9 +6,20 @@ import { Settings, Shield, User, Bell } from 'lucide-react';
 import { useToast } from '../hooks/useToast';
 
 export const SettingsPage: React.FC = () => {
-  const { publicKey } = useWallet();
+  const { publicKey, connect } = useWallet();
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('Account');
+
+  const handleConnectWallet = async () => {
+    try {
+      await connect();
+      showToast('Wallet connected successfully!', 'success');
+    } catch (error) {
+      console.error('Wallet connection failed:', error);
+      showToast('Failed to connect wallet', 'error');
+    }
+  };
 
   const handleSettingsUpdate = async (updates: any) => {
     if (!publicKey) {
@@ -28,9 +39,14 @@ export const SettingsPage: React.FC = () => {
     }
   };
 
+  const tabs = [
+    { key: 'Account', icon: User, label: 'Account' },
+    { key: 'Notifications', icon: Bell, label: 'Notifications' },
+    { key: 'Privacy', icon: Shield, label: 'Privacy & Security' },
+  ];
+
   return (
     <div className="max-w-4xl mx-auto p-6">
-      {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3">
           <Settings className="w-8 h-8 text-glow-400" />
@@ -41,19 +57,15 @@ export const SettingsPage: React.FC = () => {
         </p>
       </div>
 
-      {/* Navigation Tabs */}
       <div className="flex gap-4 mb-8 overflow-x-auto pb-2">
-        {[
-          { icon: User, label: 'Account' },
-          { icon: Bell, label: 'Notifications' },
-          { icon: Shield, label: 'Privacy & Security' }
-        ].map((tab, index) => (
+        {tabs.map((tab) => (
           <button
-            key={index}
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
             className={`
               flex items-center gap-2 px-4 py-2 rounded-lg font-medium min-w-max
-              ${index === 0 
-                ? 'bg-gradient-to-r from-glow-400 to-glow-600 text-white' 
+              ${activeTab === tab.key
+                ? 'bg-gradient-to-r from-glow-400 to-glow-600 text-white'
                 : 'text-gray-400 hover:text-white hover:bg-dark-700'
               }
               transition-all duration-300
@@ -65,36 +77,33 @@ export const SettingsPage: React.FC = () => {
         ))}
       </div>
 
-      {/* Settings Content */}
       <div className="bg-dark-800 rounded-xl border border-dark-700 p-6">
-        {publicKey ? (
+        {activeTab === 'Account' && publicKey && (
           <AccountSettingsPanel
             settings={{
-              notifications: {
-                email: true,
-                rental: true,
-                marketing: false
-              },
-              privacy: {
-                showActivity: true,
-                showStats: true,
-                showRentals: true
-              },
-              preferences: {
-                theme: 'dark',
-                currency: 'SOL',
-                language: 'en'
-              }
+              notifications: { email: true, rental: true, marketing: false },
+              privacy: { showActivity: true, showStats: true, showRentals: true },
+              preferences: { theme: 'dark', currency: 'SOL', language: 'en' },
             }}
             onUpdate={handleSettingsUpdate}
           />
-        ) : (
+        )}
+        {activeTab === 'Notifications' && (
+          <div>Notifications settings coming soon...</div>
+        )}
+        {activeTab === 'Privacy' && (
+          <div>Privacy settings coming soon...</div>
+        )}
+        {!publicKey && (
           <div className="text-center py-12">
             <Shield className="w-12 h-12 text-gray-600 mx-auto mb-4" />
             <p className="text-gray-400 mb-2">Please connect your wallet</p>
-            <p className="text-sm text-gray-500">
-              You need to connect your wallet to access settings
-            </p>
+            <button
+              onClick={handleConnectWallet}
+              className="px-4 py-2 bg-gradient-to-r from-glow-400 to-glow-600 text-white rounded-lg hover:shadow-lg transition-all"
+            >
+              Connect Wallet
+            </button>
           </div>
         )}
       </div>

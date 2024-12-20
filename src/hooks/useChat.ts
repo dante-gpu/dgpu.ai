@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { ChatMessage } from '../types/chat';
+import { ChatMessage, MessageStatus } from '../types/chat';
 import { chatService } from '../services/chat';
 import { useToast } from './useToast';
 
@@ -43,38 +43,44 @@ export const useChat = () => {
   const handleUserMessage = useCallback(async (content: string) => {
     if (!content.trim()) return;
 
+    // ChatMessage türüne uygun bir mesaj oluştur
     const userMessage: ChatMessage = {
       id: crypto.randomUUID(),
       role: 'user',
       content,
       timestamp: new Date(),
-      status: 'sending',
-      animated: true
+      status: 'sending', // MessageStatus türüne uygun
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
     setIsTyping(true);
 
     try {
       // Yapay yazma gecikmesi
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
       const assistantMessage = await chatService.sendMessage(content);
-      
-      setMessages(prev => [
-        ...prev.map(m => m.id === userMessage.id ? { ...m, status: 'sent' } : m),
-        { ...assistantMessage, animated: true }
+
+      setMessages((prev) => [
+        ...prev.map((m) =>
+          m.id === userMessage.id ? { ...m, status: 'sent' as MessageStatus } : m
+        ),
+        { ...assistantMessage },
       ]);
     } catch (error) {
       console.error('Chat error:', error);
       showToast('Mesaj gönderilemedi. Lütfen tekrar deneyin.', 'error');
-      
-      setMessages(prev => 
-        prev.map(m => m.id === userMessage.id ? { 
-          ...m, 
-          status: 'error', 
-          error: 'Mesaj gönderilemedi' 
-        } : m)
+
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === userMessage.id
+            ? {
+                ...m,
+                status: 'error' as MessageStatus,
+                error: 'Mesaj gönderilemedi',
+              }
+            : m
+        )
       );
     } finally {
       setIsLoading(false);
@@ -88,16 +94,21 @@ export const useChat = () => {
     showToast('Sohbet geçmişi temizlendi', 'success');
   }, [showToast]);
 
-  const retryMessage = useCallback(async (messageId: string) => {
-    const messageToRetry = messages.find(m => m.id === messageId);
-    if (!messageToRetry) return;
+  const retryMessage = useCallback(
+    async (messageId: string) => {
+      const messageToRetry = messages.find((m) => m.id === messageId);
+      if (!messageToRetry) return;
 
-    setMessages(prev => 
-      prev.map(m => m.id === messageId ? { ...m, status: 'sending' } : m)
-    );
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === messageId ? { ...m, status: 'sending' as MessageStatus } : m
+        )
+      );
 
-    await handleUserMessage(messageToRetry.content);
-  }, [messages, handleUserMessage]);
+      await handleUserMessage(messageToRetry.content);
+    },
+    [messages, handleUserMessage]
+  );
 
   return {
     messages,
@@ -106,6 +117,6 @@ export const useChat = () => {
     handleUserMessage,
     clearHistory,
     retryMessage,
-    messagesEndRef
+    messagesEndRef,
   };
 };

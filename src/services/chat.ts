@@ -1,8 +1,9 @@
+// Updated chatService to follow user messages and provide suggestions only when requested
+
 import { ChatMessage } from '../types/chat';
 import { GPU } from '../types/gpu';
 import { RentalHistory } from '../types/rental';
 
-// Örnek GPU verileri
 const AVAILABLE_GPUS: GPU[] = [
   {
     id: '1',
@@ -14,7 +15,7 @@ const AVAILABLE_GPUS: GPU[] = [
     pricePerHour: 0.5,
     manufacturer: 'NVIDIA',
     model: 'RTX 4090',
-    status: 'available'
+    status: 'available',
   },
   {
     id: '2',
@@ -26,7 +27,7 @@ const AVAILABLE_GPUS: GPU[] = [
     pricePerHour: 0.3,
     manufacturer: 'NVIDIA',
     model: 'RTX 3090',
-    status: 'available'
+    status: 'available',
   },
   {
     id: '3',
@@ -38,7 +39,7 @@ const AVAILABLE_GPUS: GPU[] = [
     pricePerHour: 0.4,
     manufacturer: 'NVIDIA',
     model: 'RTX 4080',
-    status: 'available'
+    status: 'available',
   },
   {
     id: '4',
@@ -50,11 +51,10 @@ const AVAILABLE_GPUS: GPU[] = [
     pricePerHour: 0.25,
     manufacturer: 'NVIDIA',
     model: 'RTX 3080',
-    status: 'available'
-  }
+    status: 'available',
+  },
 ];
 
-// AI görev tipleri ve önerilen GPU'lar
 type TaskType = 'image_generation' | 'training' | 'inference' | 'video_processing';
 
 interface TaskRecommendation {
@@ -64,32 +64,31 @@ interface TaskRecommendation {
 }
 
 const AI_TASK_RECOMMENDATIONS: Record<TaskType, TaskRecommendation> = {
-  'image_generation': {
+  image_generation: {
     description: 'Görüntü oluşturma (Stable Diffusion, DALL-E vb.)',
     recommended_gpus: ['RTX 4090', 'RTX 4080', 'RTX 3090'],
-    min_vram: 16
+    min_vram: 16,
   },
-  'training': {
+  training: {
     description: 'Model eğitimi ve fine-tuning',
     recommended_gpus: ['RTX 4090', 'RTX 3090'],
-    min_vram: 24
+    min_vram: 24,
   },
-  'inference': {
+  inference: {
     description: 'Model çıkarımı ve tahmin',
     recommended_gpus: ['RTX 4080', 'RTX 3080'],
-    min_vram: 8
+    min_vram: 8,
   },
-  'video_processing': {
+  video_processing: {
     description: 'Video işleme ve AI upscaling',
     recommended_gpus: ['RTX 4080', 'RTX 3080'],
-    min_vram: 12
-  }
+    min_vram: 12,
+  },
 };
 
-// AI görev tipini belirle
-function determineAITask(message: string): TaskType {
+function determineAITask(message: string): TaskType | null {
   message = message.toLowerCase();
-  
+
   if (message.includes('resim') || message.includes('görüntü') || message.includes('stable diffusion')) {
     return 'image_generation';
   }
@@ -102,120 +101,75 @@ function determineAITask(message: string): TaskType {
   if (message.includes('video') || message.includes('upscale')) {
     return 'video_processing';
   }
-  
-  return 'inference';
+
+  return null; // Eğer tanımsızsa null döner
 }
 
-// En uygun GPU'yu seç
 function findBestGPU(taskType: TaskType): GPU | null {
   const task = AI_TASK_RECOMMENDATIONS[taskType];
   if (!task) return null;
 
-  // Minimum VRAM gereksinimini karşılayan ve önerilen GPU'lar arasında olan GPU'ları filtrele
-  const suitableGPUs = AVAILABLE_GPUS.filter(gpu => 
-    gpu.vram >= task.min_vram && 
-    task.recommended_gpus.includes(gpu.model)
+  const suitableGPUs = AVAILABLE_GPUS.filter(
+    (gpu) => gpu.vram >= task.min_vram && task.recommended_gpus.includes(gpu.model)
   );
 
-  // Performansa göre sırala ve en iyisini seç
   return suitableGPUs.sort((a, b) => b.performance - a.performance)[0] || null;
 }
 
-// Yanıt şablonları
 const RESPONSE_TEMPLATES = {
   image_generation: (gpu: GPU) => `
-Stable Diffusion ve benzeri görüntü oluşturma modelleri için ${gpu.name} mükemmel bir seçim! 
-
-Bu GPU:
-- ${gpu.vram}GB VRAM ile büyük modelleri rahatlıkla çalıştırabilir
-- Yüksek performansı sayesinde hızlı görüntü oluşturma sağlar
-- ${gpu.pricePerHour} SOL/saat gibi uygun bir fiyata sahip
-
-Hemen kiralamak için kart üzerindeki seçenekleri kullanabilirsiniz.`,
+Stable Diffusion ve benzeri görüntü oluşturma modelleri için ${gpu.name} mükemmel bir seçim!`,
   training: (gpu: GPU) => `
-Model eğitimi için ${gpu.name} ideal bir seçim! 
-
-Özellikleri:
-- ${gpu.vram}GB VRAM ile büyük veri setlerini işleyebilir
-- Yüksek performansı ile eğitim süresini kısaltır
-- ${gpu.pricePerHour} SOL/saat fiyatıyla maliyet-etkin
-
-Kiralama işlemi için kartı kullanabilirsiniz.`,
+Model eğitimi için ${gpu.name} ideal bir seçim!`,
   inference: (gpu: GPU) => `
-Model çıkarımı için ${gpu.name} çok uygun bir seçim! 
-
-Bu GPU ile:
-- ${gpu.vram}GB VRAM sayesinde birçok modeli çalıştırabilirsiniz
-- Hızlı inference performansı elde edersiniz
-- ${gpu.pricePerHour} SOL/saat ekonomik fiyatla çalışabilirsiniz
-
-Hemen kiralamak için kartı kullanın.`,
+Model çıkarımı için ${gpu.name} çok uygun bir seçim!`,
   video_processing: (gpu: GPU) => `
-Video işleme için ${gpu.name} harika bir tercih! 
-
-Avantajları:
-- ${gpu.vram}GB VRAM ile yüksek çözünürlüklü videoları işleyebilir
-- Güçlü performansı ile hızlı sonuçlar alırsınız
-- ${gpu.pricePerHour} SOL/saat uygun fiyatlı
-
-Kiralama için kartı kullanabilirsiniz.`
+Video işleme için ${gpu.name} harika bir tercih!`,
 };
-
-// RentalHistory oluştur
-function createRentalHistory(gpu: GPU): RentalHistory {
-  return {
-    id: crypto.randomUUID(),
-    gpu,
-    hours: 1,
-    price: gpu.pricePerHour,
-    timestamp: new Date().toISOString(),
-    status: 'available',
-    renterAddress: '',
-    usageStats: {
-      cpuUsage: 0,
-      memoryUsage: 0,
-      powerUsage: 0,
-      temperature: 0,
-      gpuUsage: 0
-    },
-    performanceMetrics: {
-      throughput: '0',
-      latency: '0',
-      successRate: 0
-    }
-  };
-}
 
 export const chatService = {
   async sendMessage(message: string): Promise<ChatMessage> {
     try {
-      // Yapay gecikme
-      await new Promise(resolve => setTimeout(resolve, 500));
+      if (!message.trim()) {
+        throw new Error('Boş mesaj gönderilemez.');
+      }
 
-      // AI görev tipini belirle
       const taskType = determineAITask(message);
+
+      if (!taskType) {
+        return {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content: 'Merhaba! Size nasıl yardımcı olabilirim?',
+          timestamp: new Date(),
+          status: 'sent',
+        };
+      }
+
       const recommendedGPU = findBestGPU(taskType);
 
       if (!recommendedGPU) {
-        throw new Error('Uygun GPU bulunamadı');
+        return {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content: 'Uygun bir GPU bulunamadı. Daha fazla detay verebilir misiniz?',
+          timestamp: new Date(),
+          status: 'sent',
+        };
       }
 
       const responseText = RESPONSE_TEMPLATES[taskType](recommendedGPU);
-      const rental = createRentalHistory(recommendedGPU);
-
-      // Yanıtı ve kiralama verilerini birleştir
-      const content = `${responseText}\n\n${JSON.stringify(rental)}`;
 
       return {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content,
+        content: responseText,
         timestamp: new Date(),
-        status: 'sent'
+        status: 'sent',
       };
     } catch (error) {
       console.error('Chat error:', error);
       throw new Error(error instanceof Error ? error.message : 'Bir hata oluştu');
     }
-  }
-}; 
+  },
+};
