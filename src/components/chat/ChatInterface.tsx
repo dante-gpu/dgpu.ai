@@ -28,7 +28,7 @@ function parseMessageContent(content: string): { text: string; rental: RentalHis
       return { text, rental: rentalData };
     }
   } catch (error) {
-    console.error('Kiralama verisi parse edilemedi:', error);
+    console.error('Failed to parse rental data:', error);
   }
   return { text: content, rental: null };
 }
@@ -105,7 +105,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                           className="text-red-400 hover:text-red-300"
                         >
                           <RefreshCw className="w-4 h-4 mr-1" />
-                          Tekrar Dene
+                          Try again!
                         </Button>
                       )}
                     </div>
@@ -130,7 +130,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 <div className="w-2 h-2 bg-glow-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                 <div className="w-2 h-2 bg-glow-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
-              <span className="text-sm">AI yazıyor...</span>
+              <span className="text-sm">AI is typing...</span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -146,7 +146,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Mesajınızı yazın..."
+            placeholder="Your message"
             className="flex-1 bg-dark-800/50 border border-dark-700 rounded-lg p-3 text-white placeholder-gray-500 resize-none focus:outline-none focus:ring-2 focus:ring-glow-400/50"
             rows={1}
             disabled={isLoading}
@@ -173,7 +173,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               onClick={onClearHistory}
               className="text-gray-400 hover:text-gray-300"
             >
-              Sohbeti Temizle
+              Clear chat
             </Button>
           </div>
         )}
