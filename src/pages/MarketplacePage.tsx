@@ -1,25 +1,23 @@
-import React, { useState } from 'react';
-import { GPUCard } from '../components/GPUCard';
-import { GPU } from '../types/gpu';
-import { CreateGPUModal } from '../components/gpu/CreateGPUModal';
-import { Plus } from 'lucide-react';
-import { useGPUs } from '../hooks/useGPUs';
-import { useToast } from '../hooks/useToast';
+import React, { useState } from "react";
+import { GPUCard } from "../components/GPUCard";
+import { GPU } from "../types/gpu";
+import { CreateGPUModal } from "../components/gpu/CreateGPUModal";
+import { Plus } from "lucide-react";
+import { useGPUs } from "../hooks/useGPUs";
+import { useToast } from "../hooks/useToast";
 
 const ADMIN_WALLET = "B99ZeAHD4ZxGfSwbQRqbpQPpAigzwDCyx4ShHTcYCAtS";
 
 interface MarketplacePageProps {
   onRent: (gpu: GPU, hours: number) => Promise<void>;
-  connected: boolean;
   balance: number | null;
   walletAddress?: string;
 }
 
 export const MarketplacePage: React.FC<MarketplacePageProps> = ({
   onRent,
-  connected,
   balance,
-  walletAddress
+  walletAddress,
 }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingGPU, setEditingGPU] = useState<GPU | null>(null);
@@ -36,25 +34,26 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
     if (window.confirm(`Are you sure you want to delete ${gpu.name}?`)) {
       try {
         await deleteGPU(gpu);
-        showToast('GPU deleted successfully', 'success');
+        showToast("GPU deleted successfully", "success");
       } catch (error) {
-        console.error('Error deleting GPU:', error);
-        showToast('Failed to delete GPU', 'error');
+        console.error("Error deleting GPU:", error);
+        showToast("Failed to delete GPU", "error");
       }
     }
   };
 
-  const handleSubmit = async (gpuData: Omit<GPU, 'id'>) => {
+  const handleSubmit = async (gpuData: Omit<GPU, "id">) => {
     try {
       if (editingGPU) {
         await updateGPU(editingGPU.id, gpuData);
-        showToast('GPU updated successfully', 'success');
+        showToast("GPU updated successfully", "success");
       } else {
         await addGPU(gpuData);
-        showToast('GPU created successfully', 'success');
+        showToast("GPU created successfully", "success");
       }
     } catch (error) {
-      showToast('Operation failed', 'error');
+      console.error("Error submitting GPU:", error);
+      showToast("Operation failed", "error");
     }
   };
 
@@ -62,14 +61,13 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
     <div className="max-w-7xl mx-auto p-6">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold gradient-text">
-            GPU Marketplace
-          </h1>
+          <h1 className="text-3xl font-bold gradient-text">GPU Marketplace</h1>
           <p className="text-gray-400 mt-2">
-            Rent high-performance GPUs for your AI and machine learning workloads
+            Rent high-performance GPUs for your AI and machine learning
+            workloads
           </p>
         </div>
-        {isAdmin && connected && (
+        {isAdmin && (
           <button
             onClick={() => setShowCreateModal(true)}
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-glow-400 to-glow-600 text-white hover:shadow-lg hover:shadow-glow-500/20 transition-all duration-300 hover:scale-105"
@@ -91,7 +89,7 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
               key={gpu.id}
               gpu={gpu}
               onRent={onRent}
-              disabled={!connected}
+              disabled={!walletAddress}
               userBalance={balance}
               walletAddress={walletAddress}
               isAdmin={isAdmin}
@@ -109,9 +107,9 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
           setEditingGPU(null);
         }}
         onSubmit={handleSubmit}
-        creatorAddress={walletAddress || ''}
+        creatorAddress={walletAddress || ""}
         initialData={editingGPU}
-        mode={editingGPU ? 'edit' : 'create'}
+        mode={editingGPU ? "edit" : "create"}
       />
     </div>
   );
