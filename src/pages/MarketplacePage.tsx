@@ -6,7 +6,7 @@ import { Plus } from "lucide-react";
 import { useGPUs } from "../hooks/useGPUs";
 import { useToast } from "../hooks/useToast";
 
-const ADMIN_WALLET = "B99ZeAHD4ZxGfSwbQRqbpQPpAigzwDCyx4ShHTcYCAtS";
+const ADMIN_WALLET = "CvNCt8Y3xpDANXKavGMQ1zfcZxMYrncyNgHXc5MBHFF7";
 
 interface MarketplacePageProps {
   onRent: (gpu: GPU, hours: number) => Promise<void>;
@@ -114,3 +114,5 @@ export const MarketplacePage: React.FC<MarketplacePageProps> = ({
     </div>
   );
 };
+export { GPUCard };
+

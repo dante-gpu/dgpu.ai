@@ -1,36 +1,24 @@
 import React, { useState, useRef } from 'react';
 import { ChatMessage } from '../../types/chat';
-import { Send, Loader2, RefreshCw } from 'lucide-react';
+import { Send, Loader2, RefreshCw, User, Bot } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../ui/Button';
+import { GPUCard } from '../../pages/MarketplacePage';
 import { RentalCard } from '../rental/RentalCard';
-import { RentalHistory } from '../../types/rental';
+import { formatDate } from '../../utils/format';
 
 interface ChatInterfaceProps {
   messages: ChatMessage[];
   onSendMessage: (message: string) => void;
   isLoading: boolean;
   isTyping: boolean;
+  availableGPUs: any[];
   onRetry?: (messageId: string) => void;
   onClearHistory?: () => void;
   messagesEndRef: React.RefObject<HTMLDivElement>;
-}
-
-// Mesaj içeriğini parse et
-function parseMessageContent(content: string): { text: string; rental: RentalHistory | null } {
-  try {
-    // Kiralama verilerini içeren JSON'ı bul
-    const match = content.match(/\{[\s\S]*"performanceMetrics"[\s\S]*\}/);
-    if (match) {
-      const rentalData = JSON.parse(match[0]);
-      // Kiralama verilerini çıkardıktan sonra kalan metni temizle
-      const text = content.replace(match[0], '').trim();
-      return { text, rental: rentalData };
-    }
-  } catch (error) {
-    console.error('Kiralama verisi parse edilemedi:', error);
-  }
-  return { text: content, rental: null };
+  onRent: (gpu: any, hours: number) => Promise<void>;
+  walletAddress?: string;
+  balance: number | null;
 }
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({
@@ -38,9 +26,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   onSendMessage,
   isLoading,
   isTyping,
+  availableGPUs,
   onRetry,
   onClearHistory,
-  messagesEndRef
+  messagesEndRef,
+  onRent,
+  walletAddress,
+  balance
 }) => {
   const [input, setInput] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -62,83 +54,85 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   return (
     <div className="flex flex-col h-[600px]">
-      {/* Mesaj Listesi */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         <AnimatePresence>
-          {messages.map((message) => {
-            const { text, rental } = parseMessageContent(message.content);
-            
-            return (
-              <motion.div
-                key={message.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[80%] rounded-lg p-4 ${
-                    message.role === 'user'
-                      ? 'bg-glow-500/20 text-white ml-4'
-                      : 'bg-dark-700/50 text-gray-200 mr-4'
-                  }`}
-                >
-                  {/* Metin içeriği */}
-                  <div className="whitespace-pre-wrap">{text}</div>
-
-                  {/* Kiralama kartı */}
-                  {rental && (
-                    <div className="mt-4">
-                      <RentalCard rental={rental} />
-                    </div>
-                  )}
-
-                  {/* Hata durumu */}
-                  {message.status === 'error' && (
-                    <div className="mt-2 flex items-center gap-2">
-                      <span className="text-red-400 text-sm">{message.error}</span>
-                      {onRetry && (
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => onRetry(message.id)}
-                          className="text-red-400 hover:text-red-300"
-                        >
-                          <RefreshCw className="w-4 h-4 mr-1" />
-                          Tekrar Dene
-                        </Button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
-        
-        {/* Yazıyor göstergesi */}
-        <AnimatePresence>
-          {isTyping && (
+          {messages.map((message) => (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
+              key={message.id}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="flex items-center gap-2 text-gray-400"
+              exit={{ opacity: 0, y: -20 }}
+              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-glow-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 bg-glow-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 bg-glow-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              <div className={`
+                flex items-start gap-3 max-w-[80%]
+                ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}
+              `}>
+                <div className={`
+                  w-8 h-8 rounded-full flex items-center justify-center
+                  ${message.role === 'user' ? 'bg-glow-400' : 'bg-purple-600'}
+                `}>
+                  {message.role === 'user' ? <User size={18} /> : <Bot size={18} />}
+                </div>
+
+                <div className={`
+                  rounded-lg p-3
+                  ${message.role === 'user' ? 'bg-glow-400/10' : 'bg-dark-700'}
+                  ${message.status === 'error' ? 'border border-red-500/50' : ''}
+                `}>
+                  <p className="text-gray-200 whitespace-pre-wrap">{message.content}</p>
+                  
+                  {message.rental && (
+                    <div className="mt-4">
+                      <RentalCard rental={message.rental} />
+                    </div>
+                  )}
+
+                  {message.error && (
+                    <p className="text-sm text-red-400 mt-1">{message.error}</p>
+                  )}
+
+                  {message.status === 'error' && onRetry && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => onRetry(message.id)}
+                        className="text-red-400 hover:text-red-300"
+                      >
+                        <RefreshCw className="w-4 h-4 mr-1" />
+                        Try again!
+                      </Button>
+                    </div>
+                  )}
+
+                  <span className="text-xs text-gray-500 mt-2 block">
+                    {formatDate(new Date(message.timestamp))}
+                  </span>
+                </div>
               </div>
-              <span className="text-sm">AI yazıyor...</span>
             </motion.div>
-          )}
+          ))}
         </AnimatePresence>
-        
+
+        {isTyping && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="flex items-center gap-2 text-gray-400"
+          >
+            <div className="flex space-x-1">
+              <div className="w-2 h-2 bg-glow-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+              <div className="w-2 h-2 bg-glow-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+              <div className="w-2 h-2 bg-glow-400 rounded-full animate-bounce" />
+            </div>
+            <span className="text-sm">AI texting...</span>
+          </motion.div>
+        )}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Giriş Alanı */}
       <div className="border-t border-dark-700 p-4">
         <form onSubmit={handleSubmit} className="flex gap-2">
           <textarea
@@ -146,7 +140,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Mesajınızı yazın..."
+            placeholder="Text your message..."
             className="flex-1 bg-dark-800/50 border border-dark-700 rounded-lg p-3 text-white placeholder-gray-500 resize-none focus:outline-none focus:ring-2 focus:ring-glow-400/50"
             rows={1}
             disabled={isLoading}
@@ -154,7 +148,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
           <Button
             type="submit"
             disabled={!input.trim() || isLoading}
-            className="bg-gradient-to-r from-glow-400 to-glow-600 hover:from-glow-500 hover:to-glow-700 text-white px-4 py-2 rounded-lg transition-all duration-200"
+            className="bg-gradient-to-r from-glow-400 to-glow-600 hover:from-glow-500 hover:to-glow-700 text-white px-4 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -164,7 +158,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
           </Button>
         </form>
 
-        {/* Temizle butonu */}
         {messages.length > 0 && onClearHistory && (
           <div className="mt-2 flex justify-end">
             <Button
@@ -173,7 +166,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               onClick={onClearHistory}
               className="text-gray-400 hover:text-gray-300"
             >
-              Sohbeti Temizle
+              Clean chat
             </Button>
           </div>
         )}

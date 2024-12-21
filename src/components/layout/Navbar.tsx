@@ -5,7 +5,7 @@ import { Store, Brain, LayoutDashboard, MessageSquare, Settings } from 'lucide-r
 import { useNavigate } from 'react-router-dom';
 import { AccountSearchBar } from '../search/AccountSearchBar';
 
-const ADMIN_WALLET = "B99ZeAHD4ZxGfSwbQRqbpQPpAigzwDCyx4ShHTcYCAtS";
+const ADMIN_WALLET = "CvNCt8Y3xpDANXKavGMQ1zfcZxMYrncyNgHXc5MBHFF7";
 
 interface NavbarProps {
   connected: boolean;

@@ -8,6 +8,7 @@ export interface ChatMessage {
   timestamp: Date;
   status?: MessageStatus;
   error?: string;
+  rental?: RentalHistory;
 }
 
 export interface ChatSession {
