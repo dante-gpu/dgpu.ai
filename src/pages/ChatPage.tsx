@@ -1,20 +1,20 @@
-import React from 'react';
-import { ChatInterface } from '../components/chat/ChatInterface';
-import { useChat } from '../hooks/useChat';
-import { useWallet } from '../hooks/useWallet';
-import { Button } from '../components/ui/Button';
-import { Bot, Shield, Trash2 } from 'lucide-react';
+import React from "react";
+import { ChatInterface } from "../components/chat/ChatInterface";
+import { useChat } from "../hooks/useChat";
+import { useWallet } from "../hooks/useWallet";
+import { Button } from "../components/ui/Button";
+import { Bot, Shield, Trash2 } from "lucide-react";
 
 export const ChatPage: React.FC = () => {
   const { connected, onConnect } = useWallet();
-  const { 
-    messages, 
+  const {
+    messages,
     isLoading,
     isTyping,
     handleUserMessage,
     clearHistory,
     retryMessage,
-    messagesEndRef
+    messagesEndRef,
   } = useChat();
 
   if (!connected) {
@@ -25,17 +25,17 @@ export const ChatPage: React.FC = () => {
             <Shield className="w-8 h-8 text-glow-400" />
           </div>
           <h2 className="text-2xl font-bold text-white mb-4">
-            Cüzdanınızı Bağlayın
+            Connect Your Wallet
           </h2>
           <p className="text-gray-400 mb-8 max-w-md mx-auto">
-            AI Sohbet özelliğine erişmek için lütfen cüzdanınızı bağlayın.
-            Gelişmiş dil modelleri tarafından desteklenen kişiselleştirilmiş sohbetleri deneyimleyin.
+            Please connect your wallet to access the AI Chat feature. Experience
+            personalised chats supported by advanced language models.
           </p>
-          <Button 
+          <Button
             onClick={onConnect}
             className="bg-gradient-to-r from-glow-400 to-glow-600 hover:from-glow-500 hover:to-glow-700"
           >
-            Cüzdan Bağla
+            Connect Wallet
           </Button>
         </div>
       </div>
@@ -73,9 +73,10 @@ export const ChatPage: React.FC = () => {
         </div>
         <div className="bg-dark-800/50 backdrop-blur-sm rounded-lg border border-dark-700 p-4">
           <p className="text-gray-300 text-sm">
-            AI Sohbet Asistanımıza hoş geldiniz! Sorularınızı sorabilir, fikirlerinizi tartışabilir
-            veya çeşitli konularda yardım alabilirsiniz. AI'mız bilgilendirici ve yardımcı yanıtlar
-            verirken doğal bir sohbet akışı sağlamak için tasarlanmıştır.
+            Welcome to our AI Chat Assistant! You can ask your questions,
+            discuss your ideas or get help on various topics. Our AI is designed
+            to provide a natural flow of conversation while providing
+            informative and helpful answers.
           </p>
         </div>
       </div>
@@ -97,28 +98,27 @@ export const ChatPage: React.FC = () => {
       <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
           {
-            title: 'Doğal Sohbetler',
-            description: 'AI ile akıcı ve bağlama duyarlı tartışmalar yapın'
+            title: "Natural Conversations",
+            description:
+              "Have fluent and context-sensitive discussions with AI",
           },
           {
-            title: 'Anında Yanıtlar',
-            description: 'Sorularınıza hızlı ve doğru cevaplar alın'
+            title: "Instant Answers",
+            description: "Get fast and accurate answers to your questions",
           },
           {
-            title: 'Güvenli & Özel',
-            description: 'Sohbetleriniz korunur ve gizli tutulur'
-          }
+            title: "Safe & Private",
+            description: "Your chats are protected and kept private",
+          },
         ].map((feature, index) => (
-          <div 
+          <div
             key={index}
             className="bg-dark-800/30 backdrop-blur-sm rounded-lg border border-dark-700 p-4"
           >
             <h3 className="text-glow-400 font-semibold mb-2">
               {feature.title}
             </h3>
-            <p className="text-gray-400 text-sm">
-              {feature.description}
-            </p>
+            <p className="text-gray-400 text-sm">{feature.description}</p>
           </div>
         ))}
       </div>
