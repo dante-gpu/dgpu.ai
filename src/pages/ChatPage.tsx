@@ -65,7 +65,7 @@ export const ChatPage: React.FC = () => {
               className="text-gray-400 hover:text-gray-300"
             >
               <Trash2 className="w-4 h-4 mr-2" />
-              Sohbeti Temizle
+              Clean Chat
             </Button>
           )}
         </div>
