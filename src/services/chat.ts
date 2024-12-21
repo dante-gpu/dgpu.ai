@@ -2,14 +2,13 @@ import { ChatMessage } from '../types/chat';
 import { GPU } from '../types/gpu';
 import { RentalHistory } from '../types/rental';
 
-
 // Kullanılabilir GPU'ların tanımlanması
 const AVAILABLE_GPUS: GPU[] = [
   {
     id: '1',
     name: 'NVIDIA RTX 4090',
-    description: 'En yüksek performanslı GPU, AI ve görüntü işleme için ideal',
-    imageUrl: '/images/gpus/rtx4090.png',
+    description: 'Highest performance GPU, ideal for AI and image processing',
+    imageUrl: '../images/rtx4090.jpeg',
     performance: 100,
     vram: 24,
     pricePerHour: 0.5,
@@ -20,8 +19,8 @@ const AVAILABLE_GPUS: GPU[] = [
   {
     id: '2',
     name: 'NVIDIA RTX 3090',
-    description: 'Yüksek performanslı GPU, büyük model eğitimi için uygun',
-    imageUrl: '/images/gpus/rtx3090.png',
+    description: 'High-performance GPU, suitable for large model training',
+    imageUrl: 'src/images/rtx3090.jpeg',
     performance: 85,
     vram: 24,
     pricePerHour: 0.3,
@@ -32,8 +31,8 @@ const AVAILABLE_GPUS: GPU[] = [
   {
     id: '3',
     name: 'NVIDIA RTX 4080',
-    description: 'Dengeli performans, çoğu AI görevi için yeterli',
-    imageUrl: '/images/gpus/rtx4080.png',
+    description: 'Balanced performance, sufficient for most AI tasks',
+    imageUrl: 'src/images/rtx4080.jpeg',
     performance: 90,
     vram: 16,
     pricePerHour: 0.4,
@@ -44,8 +43,8 @@ const AVAILABLE_GPUS: GPU[] = [
   {
     id: '4',
     name: 'NVIDIA RTX 3080',
-    description: 'Maliyet-etkin GPU, orta ölçekli işler için ideal',
-    imageUrl: '/images/gpus/rtx3080.png',
+    description: 'Cost-effective GPU, ideal for medium-sized jobs',
+    imageUrl: 'src/images/rtx3080.jpg',
     performance: 75,
     vram: 12,
     pricePerHour: 0.25,
@@ -71,7 +70,7 @@ interface TaskRecommendation {
 // Her görev tipi için detaylı öneriler
 const AI_TASK_RECOMMENDATIONS: Record<TaskType, TaskRecommendation> = {
   'image_generation': {
-    description: 'Görüntü oluşturma (Stable Diffusion, DALL-E vb.)',
+    description: 'Image generation (Stable Diffusion, DALL-E etc.)',
     recommended_gpus: ['RTX 4090', 'RTX 4080', 'RTX 3090'],
     min_vram: 16,
     performance_weight: 0.7,
@@ -87,7 +86,7 @@ const AI_TASK_RECOMMENDATIONS: Record<TaskType, TaskRecommendation> = {
     required_features: ['high memory bandwidth', 'cuda']
   },
   'inference': {
-    description: 'Model çıkarımı ve tahmin',
+    description: 'Model inference and prediction',
     recommended_gpus: ['RTX 4080', 'RTX 3080', 'RTX 3090'],
     min_vram: 8,
     performance_weight: 0.4,
@@ -95,7 +94,7 @@ const AI_TASK_RECOMMENDATIONS: Record<TaskType, TaskRecommendation> = {
     required_features: ['cuda']
   },
   'video_processing': {
-    description: 'Video işleme ve AI upscaling',
+    description: 'Video processing and AI upscaling',
     recommended_gpus: ['RTX 4080', 'RTX 3080', 'RTX 4090'],
     min_vram: 12,
     performance_weight: 0.6,
@@ -110,20 +109,21 @@ function determineAITask(message: string): TaskType {
   
   const taskKeywords = {
     image_generation: [
-      'resim', 'görüntü', 'stable diffusion', 'dall-e', 'midjourney', 
-      'çizim', 'art', 'grafik', 'illustrasyon', 'tasarım'
+      'picture', 'image', 'stable diffusion', 'dall-e', 'midjourney', 
+      'drawing', 'art', 'graphic', 'illustration', 'design'
+
     ],
     training: [
-      'eğitim', 'training', 'fine-tune', 'model geliştirme', 'öğrenme',
-      'train', 'dataset', 'veri seti', 'model eğitimi', 'fine tuning'
+      'education', 'training', 'fine-tune', 'model development', 'learning',
+      'train', 'dataset', 'data set', 'model training', 'fine tuning',
     ],
     inference: [
-      'tahmin', 'inference', 'çıkarım', 'prediction', 'test etme',
-      'model çalıştırma', 'deploy', 'üretim', 'production', 'serving'
+      'prediction', 'inference', 'derivation', 'prediction', 'testing',
+      'model execution', 'deploy', 'production', 'production', 'serving',
     ],
     video_processing: [
-      'video', 'upscale', 'render', 'editing', 'işleme',
-      'encoding', 'transcoding', 'streaming', 'kayıt', 'post-production'
+      'video', 'upscale', 'render', 'editing', 'processing',
+      'encoding', 'transcoding', 'streaming', 'recording', 'post-production'
     ]
   };
 
@@ -153,28 +153,28 @@ function analyzeUserPreferences(message: string): {
   message = message.toLowerCase();
   
   return {
-    preferHighPerformance: message.includes('hızlı') || 
-                          message.includes('yüksek performans') || 
-                          message.includes('güçlü') ||
-                          message.includes('en iyi'),
+    preferHighPerformance: message.includes('fast') || 
+                          message.includes('high performance') || 
+                          message.includes('powerful') ||
+                          message.includes('best'),
     
-    preferLowCost: message.includes('uygun') || 
-                   message.includes('ekonomik') || 
-                   message.includes('ucuz') ||
-                   message.includes('bütçe'),
+    preferLowCost: message.includes('affordable') || 
+                   message.includes('economic') || 
+                   message.includes('cheap') ||
+                   message.includes('budget'),
     
-    needsHighVram: message.includes('büyük model') || 
-                   message.includes('yüksek çözünürlük') || 
+    needsHighVram: message.includes('large model') || 
+                   message.includes('high resolution') || 
                    message.includes('24gb') ||
-                   message.includes('geniş bellek'),
+                   message.includes('large memory'),
     
-    isUrgent: message.includes('acil') || 
-              message.includes('hemen') || 
-              message.includes('acele'),
+    isUrgent: message.includes('urgent') || 
+              message.includes('immediately') || 
+              message.includes('rush'),
     
-    requiresReliability: message.includes('kararlı') || 
+    requiresReliability: message.includes('reliable') || 
                         message.includes('stable') || 
-                        message.includes('güvenilir')
+                        message.includes('trustworthy')
   };
 }
 
@@ -241,12 +241,12 @@ const RESPONSE_TEMPLATES = {
     const rental = createRentalHistory(gpu);
     return {
       text: `
-Görüntü oluşturma işlemleriniz için ${gpu.name} harika bir tercih olacak!
+${gpu.name} is a great choice for your image generation tasks!
 
-Öne çıkan özellikleri:
-- ${gpu.vram}GB VRAM kapasitesi ile yüksek çözünürlüklü görüntüler oluşturabilirsiniz
-- ${gpu.performance}/100 performans puanı ile hızlı sonuçlar alırsınız
-- Saatlik ${gpu.pricePerHour} SOL fiyatıyla bütçe dostu bir seçenek
+Key features:
+- Create high-resolution images with ${gpu.vram}GB VRAM capacity
+- Achieve fast results with a performance score of ${gpu.performance}/100
+- Budget-friendly option at an hourly rate of ${gpu.pricePerHour} SOL
 `,
       rental: rental
     };
@@ -256,12 +256,12 @@ Görüntü oluşturma işlemleriniz için ${gpu.name} harika bir tercih olacak!
     const rental = createRentalHistory(gpu);
     return {
       text: `
-Model eğitimi için ${gpu.name} ideal bir seçim!
+${gpu.name} is an ideal choice for model training!
 
-Teknik özellikleri:
-- ${gpu.vram}GB VRAM ile büyük veri setlerini rahatça işleyebilirsiniz
-- ${gpu.performance}/100 performans puanı sayesinde eğitim sürelerini minimize eder
-- Saatlik ${gpu.pricePerHour} SOL ile maliyet-etkin bir çözüm
+Technical specifications:
+- Process large datasets comfortably with ${gpu.vram}GB VRAM
+- Minimize training times with a performance score of ${gpu.performance}/100
+- Cost-effective solution at an hourly rate of ${gpu.pricePerHour} SOL
 `,
       rental: rental
     };
@@ -271,12 +271,12 @@ Teknik özellikleri:
     const rental = createRentalHistory(gpu);
     return {
       text: `
-Model çıkarımı için ${gpu.name} çok uygun bir seçim!
+${gpu.name} is a very suitable choice for model inference!
 
-Avantajları:
-- ${gpu.vram}GB VRAM ile birden fazla modeli paralel çalıştırabilirsiniz
-- ${gpu.performance}/100 performans puanı ile düşük latency sağlar
-- Saatlik ${gpu.pricePerHour} SOL fiyatıyla ekonomik bir seçenek
+Advantages:
+- Run multiple models in parallel with ${gpu.vram}GB VRAM
+- Ensure low latency with a performance score of ${gpu.performance}/100
+- Economical option at an hourly rate of ${gpu.pricePerHour} SOL
 `,
       rental: rental
     };
@@ -286,17 +286,18 @@ Avantajları:
     const rental = createRentalHistory(gpu);
     return {
       text: `
-Video processing için ${gpu.name} harika bir tercih!
+${gpu.name} is an excellent choice for video processing!
 
-Özellikler:
-- ${gpu.vram}GB VRAM ile 4K/8K video işleme kapasitesi
-- ${gpu.performance}/100 performans puanı ile gerçek zamanlı işleme
-- Saatlik ${gpu.pricePerHour} SOL uygun fiyatlandırma
+Features:
+- 4K/8K video processing capability with ${gpu.vram}GB VRAM
+- Real-time processing with a performance score of ${gpu.performance}/100
+- Affordable pricing at an hourly rate of ${gpu.pricePerHour} SOL
 `,
       rental: rental
     };
   }
 };
+
 
 // RentalHistory oluşturma fonksiyonu
 function createRentalHistory(gpu: GPU): RentalHistory {
@@ -336,7 +337,7 @@ export const chatService = {
       const recommendedGPU = findBestGPU(taskType, message);
       
       if (!recommendedGPU) {
-        throw new Error('Uygun GPU bulunamadı');
+        throw new Error('No suitable GPU found!');
       }
       
       const response = RESPONSE_TEMPLATES[taskType](recommendedGPU);
@@ -355,7 +356,7 @@ export const chatService = {
       if (error instanceof Error) {
         throw new Error(error.message);
       } else {
-        throw new Error('Beklenmeyen bir hata oluştu');
+        throw new Error('An unexpected error occurred!');
       }
     }
   }
