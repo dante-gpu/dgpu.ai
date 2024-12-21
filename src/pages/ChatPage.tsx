@@ -52,11 +52,9 @@ export const ChatPage: React.FC = () => {
               <Bot className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold gradient-text">
-                AI Sohbet Asistanı
-              </h1>
+              <h1 className="text-3xl font-bold gradient-text">Clean Chat </h1>
               <p className="text-gray-400">
-                Gelişmiş dil modelleri ile güçlendirilmiştir
+                Powered by advanced language models{" "}
               </p>
             </div>
           </div>
